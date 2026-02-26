@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fünftersatz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --card: #161a22;
+    --accent: #00e5a0;
+    --accent2: #ff4d6d;
+    --accent3: #7b6cff;
+    --text: #edf0f4;
+    --muted: #6b7280;
+    --border: rgba(255,255,255,0.07);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100vh; overflow:hidden; }
+  .shell { max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; }
+  .screen { display:none; flex-direction:column; flex:1; overflow-y:auto; animation:fadeUp .35s ease; }
+  .screen.active { display:flex; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  @keyframes wave{0%,100%{height:15%;opacity:.2}50%{height:90%;opacity:.7}}
+
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:var(--accent); }
+  .topbar { padding:22px 24px 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .back-btn { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); cursor:pointer; padding:6px 0; }
+  .hero { padding:28px 24px 20px; }
+  .hero-eyebrow { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+  .hero-title { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:.95; letter-spacing:1px; margin-bottom:14px; }
+  .hero-title .hl { color:var(--accent); }
+  .hero-sub { font-size:15px; color:var(--muted); font-weight:300; line-height:1.6; }
+  .section-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); padding:24px 24px 14px; flex-shrink:0; }
+
+  /* ONBOARDING */
+  .onboarding-wrap { flex:1; display:flex; flex-direction:column; padding:0 24px 32px; overflow-y:auto; }
+  .progress-steps { display:flex; gap:5px; margin-bottom:28px; }
+  .step-dot { flex:1; height:3px; border-radius:3px; background:rgba(255,255,255,.08); transition:.3s; }
+  .step-dot.done { background:var(--accent); }
+  .step-dot.active { background:var(--accent); opacity:.5; }
+  .step-block { display:none; flex-direction:column; flex:1; animation:fadeUp .3s ease; }
+  .step-block.active { display:flex; }
+  .step-eyebrow { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+  .step-title { font-family:'Bebas Neue',sans-serif; font-size:36px; line-height:1; margin-bottom:8px; }
+  .step-sub { font-size:14px; color:var(--muted); font-weight:300; line-height:1.6; margin-bottom:24px; }
+  .input-field { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:16px 18px; font-size:16px; color:var(--text); width:100%; font-family:'DM Sans',sans-serif; outline:none; transition:.2s; margin-bottom:14px; }
+  .input-field:focus { border-color:var(--accent); }
+  .input-field::placeholder { color:var(--muted); }
+  .option-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .option-grid.two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .option-btn { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:15px 18px; font-size:14px; cursor:pointer; transition:.2s; font-family:'DM Sans',sans-serif; color:var(--text); text-align:left; display:flex; align-items:center; gap:12px; }
+  .option-btn.selected { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,.06); }
+  .option-label { font-size:14px; font-weight:500; }
+  .option-sub { font-size:12px; color:var(--muted); margin-top:2px; }
+  .option-btn.selected .option-sub { color:rgba(0,229,160,.7); }
+  .opt-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:rgba(255,255,255,.05); }
+  .option-btn.selected .opt-icon { background:rgba(0,229,160,.12); }
+  .ttr-display { font-family:'Bebas Neue',sans-serif; font-size:52px; color:var(--accent); margin-bottom:6px; }
+  .ttr-label { font-size:13px; color:var(--muted); margin-bottom:20px; }
+  input[type=range] { width:100%; -webkit-appearance:none; height:4px; background:rgba(255,255,255,.08); border-radius:4px; outline:none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--accent); cursor:pointer; box-shadow:0 0 12px rgba(0,229,160,.4); }
+  .slider-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:8px; margin-bottom:24px; }
+  .tag-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .tag-btn { background:var(--card); border:2px solid var(--border); border-radius:100px; padding:10px 16px; font-size:13px; cursor:pointer; transition:.2s; font-family:'DM Sans',sans-serif; color:var(--muted); }
+  .tag-btn.selected-strength { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,.06); }
+  .tag-btn.selected-weakness { border-color:var(--accent2); color:var(--accent2); background:rgba(255,77,109,.06); }
+  .tag-hint { font-size:11px; color:var(--muted); margin-bottom:12px; display:flex; gap:14px; flex-wrap:wrap; }
+  .tag-hint span { display:flex; align-items:center; gap:5px; }
+  .hint-dot { width:7px; height:7px; border-radius:50%; }
+  .next-btn { width:100%; background:var(--accent); border:none; border-radius:14px; padding:18px; font-size:16px; font-weight:500; cursor:pointer; transition:.2s; font-family:'DM Sans',sans-serif; color:#0d0f14; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .next-btn:hover { opacity:.9; }
+  .next-btn:disabled { opacity:.3; cursor:not-allowed; }
+
+  /* HOME */
+  .mood-row { display:flex; gap:10px; padding:0 24px; overflow-x:auto; scrollbar-width:none; flex-shrink:0; }
+  .mood-row::-webkit-scrollbar { display:none; }
+  .mood-chip { flex-shrink:0; background:var(--card); border:2px solid var(--border); border-radius:100px; padding:11px 18px; font-size:14px; cursor:pointer; transition:all .2s; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+  .mood-chip.selected, .mood-chip:hover { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,.08); }
+  .main-cards { padding:0 24px; display:flex; flex-direction:column; gap:14px; }
+  .main-card { background:var(--card); border:2px solid var(--border); border-radius:20px; padding:24px; cursor:pointer; transition:all .25s; }
+  .main-card:hover { transform:translateY(-2px); border-color:rgba(255,255,255,.13); }
+  .card-top { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .card-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .card-tag { font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:4px 10px; border-radius:100px; }
+  .main-card h3 { font-size:18px; font-weight:500; margin-bottom:6px; }
+  .main-card p { font-size:14px; color:var(--muted); line-height:1.6; font-weight:300; }
+  .pro-badge { font-size:9px; letter-spacing:2px; text-transform:uppercase; background:linear-gradient(135deg,#f5a623,#ff4d6d); color:white; padding:3px 9px; border-radius:100px; margin-left:8px; font-weight:500; }
+  .video-card { background:linear-gradient(145deg,#1a1510,#120f0a); border:2px solid rgba(245,166,35,.15); border-radius:20px; padding:24px; position:relative; overflow:hidden; }
+  .video-upload-area { border:2px dashed rgba(245,166,35,.25); border-radius:14px; padding:24px; text-align:center; margin-top:14px; cursor:pointer; transition:.2s; }
+  .video-upload-area:hover { border-color:rgba(245,166,35,.5); background:rgba(245,166,35,.04); }
+  .profile-pill { margin:0 24px 4px; background:rgba(0,229,160,.06); border:1.5px solid rgba(0,229,160,.12); border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
+  .pill-avatar { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--accent3),var(--accent)); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; font-weight:600; color:white; }
+  .pill-ttr { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--accent); letter-spacing:1px; }
+
+  /* MENTOR CHAT */
+  .chat-feed { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:14px; }
+  .reply-btn { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:15px 18px; font-size:14px; cursor:pointer; transition:.2s; font-family:'DM Sans',sans-serif; color:var(--text); text-align:left; display:flex; align-items:center; gap:12px; width:100%; }
+  .reply-btn:hover { border-color:var(--accent3); color:var(--accent3); background:rgba(123,108,255,.08); }
+  .chat-input-bar { padding:10px 16px 24px; border-top:1px solid var(--border); background:var(--bg); display:flex; gap:10px; align-items:flex-end; flex-shrink:0; }
+  .chat-textarea { flex:1; background:var(--card); border:2px solid var(--border); border-radius:14px; padding:12px 16px; font-size:15px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; resize:none; line-height:1.5; transition:.2s; max-height:100px; }
+  .chat-textarea:focus { border-color:var(--accent3); }
+  .send-btn { width:46px; height:46px; border-radius:50%; background:var(--accent3); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 0 18px rgba(123,108,255,.35); }
+
+  /* SOUND */
+  .player-card { margin:0 24px; background:linear-gradient(145deg,#1c1e2e,#13151f); border:2px solid rgba(123,108,255,.18); border-radius:24px; padding:28px 24px; }
+  .wave-viz { display:flex; align-items:center; gap:4px; height:40px; margin-bottom:20px; }
+  .wave-bar { flex:1; border-radius:4px; background:var(--accent3); opacity:.4; animation:wave 1.3s ease-in-out infinite; }
+  .wave-bar:nth-child(2n){animation-delay:.15s} .wave-bar:nth-child(3n){animation-delay:.35s}
+  .play-btn { width:56px; height:56px; border-radius:50%; background:var(--accent3); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 0 28px rgba(123,108,255,.4); transition:.2s; }
+  .beat-list { padding:0 24px; display:flex; flex-direction:column; gap:10px; }
+  .beat-item { background:var(--card); border:2px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:.2s; }
+  .beat-item.active { border-color:var(--accent3); background:rgba(123,108,255,.07); }
+  .beat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .beat-hz { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; margin-left:auto; }
+  .aff-card { margin:0 24px; background:linear-gradient(145deg,#141f1a,#0f1712); border:2px solid rgba(0,229,160,.12); border-radius:24px; padding:28px 24px; }
+  .aff-text { font-family:'Bebas Neue',sans-serif; font-size:24px; line-height:1.2; letter-spacing:1px; color:var(--accent); min-height:72px; margin-bottom:20px; transition:opacity .3s; }
+  .aff-btn { background:rgba(255,255,255,.04); border:2px solid var(--border); border-radius:12px; padding:14px 18px; font-size:14px; cursor:pointer; transition:.2s; font-family:'DM Sans',sans-serif; color:var(--text); text-align:left; display:flex; align-items:center; gap:12px; width:100%; margin-bottom:10px; }
+  .aff-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .rec-btn { color:var(--accent2); border-color:rgba(255,77,109,.25); }
+
+  /* ANALYSE */
+  .stat-card { margin:0 24px 14px; background:var(--card); border:2px solid var(--border); border-radius:20px; padding:22px 24px; }
+  .stat-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+  .stat-badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:4px 12px; border-radius:100px; }
+  .badge-warn { background:rgba(255,77,109,.1); color:var(--accent2); }
+  .badge-good { background:rgba(0,229,160,.1); color:var(--accent); }
+  .bar-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .bar-label { font-size:12px; color:var(--muted); width:100px; flex-shrink:0; }
+  .bar-track { flex:1; height:7px; background:rgba(255,255,255,.06); border-radius:7px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:7px; width:0%; transition:width 1.2s cubic-bezier(.16,1,.3,1); }
+  .insight-card { margin:0 24px; background:rgba(0,229,160,.05); border:2px solid rgba(0,229,160,.12); border-radius:20px; padding:22px 24px; }
+
+  /* NAV */
+  .bottom-nav { background:rgba(13,15,20,.97); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; padding:12px 0 20px; flex-shrink:0; }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; transition:.2s; padding:4px 0; }
+  .nav-item svg { opacity:.3; transition:.2s; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+  .nav-item.active svg { opacity:1; }
+  .nav-item.active .nav-label { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ONBOARDING -->
+  <div class="screen active" id="screen-onboarding">
+    <div class="topbar">
+      <div class="logo">fünftersatz</div>
+      <div style="font-size:12px;color:var(--muted)" id="stepCounter">1 / 6</div>
+    </div>
+    <div style="padding:16px 24px 0;flex-shrink:0">
+      <div class="progress-steps">
+        <div class="step-dot active" id="dot-0"></div>
+        <div class="step-dot" id="dot-1"></div>
+        <div class="step-dot" id="dot-2"></div>
+        <div class="step-dot" id="dot-3"></div>
+        <div class="step-dot" id="dot-4"></div>
+        <div class="step-dot" id="dot-5"></div>
+      </div>
+    </div>
+    <div class="onboarding-wrap">
+
+      <div class="step-block active" id="step-0">
+        <div class="step-eyebrow">Schritt 1</div>
+        <div class="step-title">WER BIST DU?</div>
+        <div class="step-sub">Damit dein Mentor dich wirklich kennt.</div>
+        <input class="input-field" id="input-name" type="text" placeholder="Dein Vorname" oninput="checkStep0()">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Wie lange spielst du schon?</div>
+        <div class="option-grid two-col">
+          <div class="option-btn" onclick="selectOne(this,'years')"><div><div class="option-label">1–3 Jahre</div></div></div>
+          <div class="option-btn" onclick="selectOne(this,'years')"><div><div class="option-label">4–8 Jahre</div></div></div>
+          <div class="option-btn" onclick="selectOne(this,'years')"><div><div class="option-label">9–15 Jahre</div></div></div>
+          <div class="option-btn" onclick="selectOne(this,'years')"><div><div class="option-label">15+ Jahre</div></div></div>
+        </div>
+        <button class="next-btn" id="btn-0" onclick="nextStep(1)" disabled>
+          Weiter <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="step-block" id="step-1">
+        <div class="step-eyebrow">Schritt 2</div>
+        <div class="step-title">DEIN SPIELSTIL</div>
+        <div class="step-sub">Wie würdest du dein Spiel beschreiben?</div>
+        <div class="option-grid">
+          <div class="option-btn" onclick="selectOne(this,'style')">
+            <div class="opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div><div class="option-label">Offensiv</div><div class="option-sub">Topspin, Angriff, Tempo</div></div>
+          </div>
+          <div class="option-btn" onclick="selectOne(this,'style')">
+            <div class="opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><div class="option-label">Defensiv</div><div class="option-sub">Abwehr, Kontrolle, Geduld</div></div>
+          </div>
+          <div class="option-btn" onclick="selectOne(this,'style')">
+            <div class="opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <div><div class="option-label">Allround</div><div class="option-sub">Vielseitig, anpassungsfähig</div></div>
+          </div>
+          <div class="option-btn selected" onclick="selectOne(this,'style')">
+            <div class="opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg></div>
+            <div><div class="option-label">Störspieler</div><div class="option-sub">Noppe, Anti, Variation</div></div>
+          </div>
+        </div>
+        <button class="next-btn" onclick="nextStep(2)">Weiter <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+
+      <div class="step-block" id="step-2">
+        <div class="step-eyebrow">Schritt 3</div>
+        <div class="step-title">DEIN MATERIAL</div>
+        <div class="step-sub">Welche Beläge spielst du? Mehrfachauswahl möglich.</div>
+        <div class="option-grid">
+          <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Vorhand: Glattbelag</div><div class="option-sub">Standard Topspin-Belag</div></div></div>
+          <div class="option-btn selected" onclick="this.classList.toggle('selected')"><div><div class="option-label">Rückhand: Lange Noppe</div><div class="option-sub">Störeffekt, Konterspiel</div></div></div>
+          <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Kurze Noppe</div><div class="option-sub">Schnelles Konter, wenig Effekt</div></div></div>
+          <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Anti-Topspin</div><div class="option-sub">Effektumkehr, Abwehr</div></div></div>
+        </div>
+        <button class="next-btn" onclick="nextStep(3)">Weiter <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+
+      <div class="step-block" id="step-3">
+        <div class="step-eyebrow">Schritt 4</div>
+        <div class="step-title">DEIN NIVEAU</div>
+        <div class="step-sub">TTR-Wert – damit dein Mentor auf deinem Level spricht.</div>
+        <div class="ttr-display" id="ttrDisplay">1520</div>
+        <div class="ttr-label" id="ttrLabel">Bezirksliga · Solider Vereinsspieler</div>
+        <input type="range" min="500" max="2800" value="1520" step="10" oninput="updateTTR(this.value)">
+        <div class="slider-labels"><span>Einsteiger</span><span>Bezirk</span><span>Verband</span><span>Bundesliga</span></div>
+        <button class="next-btn" onclick="nextStep(4)">Weiter <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+
+      <div class="step-block" id="step-4">
+        <div class="step-eyebrow">Schritt 5</div>
+        <div class="step-title">STÄRKEN & SCHWÄCHEN</div>
+        <div class="step-sub">Sei ehrlich – hier schaut nur dein Mentor.</div>
+        <div class="tag-hint">
+          <span><div class="hint-dot" style="background:var(--accent)"></div> Stärke (1x)</span>
+          <span><div class="hint-dot" style="background:var(--accent2)"></div> Schwäche (2x)</span>
+          <span>Neutral (3x)</span>
+        </div>
+        <div class="tag-grid">
+          <div class="tag-btn" onclick="cycleTag(this)">Aufschlag</div>
+          <div class="tag-btn selected-strength" onclick="cycleTag(this)">Störspiel</div>
+          <div class="tag-btn selected-strength" onclick="cycleTag(this)">Noppen-Kontrolle</div>
+          <div class="tag-btn selected-weakness" onclick="cycleTag(this)">VH-Abschluss</div>
+          <div class="tag-btn" onclick="cycleTag(this)">RH-Topspin</div>
+          <div class="tag-btn selected-weakness" onclick="cycleTag(this)">Routine bei Führung</div>
+          <div class="tag-btn" onclick="cycleTag(this)">Footwork</div>
+          <div class="tag-btn selected-strength" onclick="cycleTag(this)">Konstanz</div>
+          <div class="tag-btn selected-weakness" onclick="cycleTag(this)">Nervenstärke</div>
+          <div class="tag-btn" onclick="cycleTag(this)">Platzierung</div>
+        </div>
+        <button class="next-btn" onclick="nextStep(5)">Weiter <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+
+      <div class="step-block" id="step-5">
+        <div class="step-eyebrow">Schritt 6</div>
+        <div class="step-title">WAS WILLST DU <span style="color:var(--accent)">ERREICHEN?</span></div>
+        <div class="step-sub">Dein mentales Hauptziel.</div>
+        <div class="option-grid">
+          <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">Ruhiger unter Druck</div><div class="option-sub">Enge Spielstände meistern</div></div></div>
+          <div class="option-btn selected" onclick="selectOne(this,'goal')"><div><div class="option-label">Führungen ausbauen</div><div class="option-sub">Nicht mehr zittern bei 8:6</div></div></div>
+          <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">Konstanter werden</div><div class="option-sub">Weniger Formschwankungen</div></div></div>
+          <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">TTR steigern</div><div class="option-sub">Nächste Spielklasse</div></div></div>
+        </div>
+        <button class="next-btn" onclick="finishOnboarding()">Los geht's! <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="topbar">
+      <div class="logo">fünftersatz</div>
+      <div style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite"></div>
+        7 Tage
+      </div>
+    </div>
+    <div class="hero">
+      <div class="hero-eyebrow" id="home-greeting">Guten Abend</div>
+      <div class="hero-title">MENTAL<br><span class="hl">STÄRKER</span><br>SPIELEN</div>
+      <div class="hero-sub">Dein KI-Mentor für den Kopf im Tischtennis.</div>
+    </div>
+    <div class="profile-pill">
+      <div class="pill-avatar" id="pill-avatar">?</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500" id="pill-name">Spielerprofil</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Störspieler · Lange Noppe</div>
+      </div>
+      <div class="pill-ttr" id="pill-ttr">1520</div>
+    </div>
+    <div class="section-label">Wie geht's dir gerade?</div>
+    <div class="mood-row">
+      <div class="mood-chip" onclick="selectMood(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Fokussiert</div>
+      <div class="mood-chip" onclick="selectMood(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Unter Druck</div>
+      <div class="mood-chip" onclick="selectMood(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Müde</div>
+      <div class="mood-chip" onclick="selectMood(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Nervös</div>
+    </div>
+    <div class="section-label">Was möchtest du tun?</div>
+    <div class="main-cards">
+      <div class="main-card" onclick="goTo('screen-mentor')">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(123,108,255,.12)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7b6cff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/></svg></div>
+          <div class="card-tag" style="background:rgba(123,108,255,.1);color:#7b6cff">KI Mentor</div>
+        </div>
+        <h3>Coaching & Analyse</h3>
+        <p>Dein Mentor kennt dein Störspiel und weiß wo der VH-Abschluss noch fehlt.</p>
+      </div>
+      <div class="main-card" onclick="goTo('screen-sound')">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(0,229,160,.12)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></div>
+          <div class="card-tag" style="background:rgba(0,229,160,.1);color:var(--accent)">Sound Zone</div>
+        </div>
+        <h3>Binaural Beats & Affirmationen</h3>
+        <p>Fokus-Frequenzen und deine persönlichen Mantras.</p>
+      </div>
+      <div class="main-card" onclick="goTo('screen-analyse')">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(255,77,109,.12)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+          <div class="card-tag" style="background:rgba(255,77,109,.1);color:var(--accent2)">Analyse</div>
+        </div>
+        <h3>Deine Muster</h3>
+        <p>8 Matches ausgewertet – ein klares Muster gefunden.</p>
+      </div>
+      <div class="video-card">
+        <div class="card-top" style="margin-bottom:8px">
+          <div class="card-icon" style="background:rgba(245,166,35,.12)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+          <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f5a623">Video-Analyse</span><span class="pro-badge">PRO</span>
+        </div>
+        <h3 style="margin-bottom:6px">Match-Video hochladen</h3>
+        <p style="color:var(--muted);font-size:14px;line-height:1.6;font-weight:300">KI analysiert Technik, Taktik, Körpersprache. Kommt bald.</p>
+        <div class="video-upload-area">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6;margin-bottom:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:13px;color:var(--muted)"><strong style="color:#f5a623">Video hier ablegen</strong><br>MP4, MOV · max. 500 MB</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- MENTOR -->
+  <div class="screen" id="screen-mentor" style="height:100vh;">
+    <div class="topbar" style="flex-shrink:0">
+      <div class="back-btn" onclick="goTo('screen-home')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Zurück</div>
+      <div class="logo" style="font-size:17px">fünftersatz</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="chat-feed" id="chat-messages"></div>
+    <div id="quick-replies" style="padding:0 20px 12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+      <button class="reply-btn" onclick="sendQuick('Der VH-Abschluss lässt mich nicht los')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>VH-Abschluss fehlt mir noch</button>
+      <button class="reply-btn" onclick="sendQuick('Ich verliere immer wenn ich im letzten Satz führe')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Bei Führung werde ich hektisch</button>
+      <button class="reply-btn" onclick="sendQuick('Gegner durchschauen mein Noppenspiel zunehmend')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Gegner lesen mein Noppenspiel</button>
+    </div>
+    <div class="chat-input-bar">
+      <textarea class="chat-textarea" id="chat-input" placeholder="Schreib deinem Mentor..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" onclick="sendMessage()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    </div>
+  </div>
+
+  <!-- SOUND -->
+  <div class="screen" id="screen-sound">
+    <div class="topbar" style="flex-shrink:0">
+      <div class="back-btn" onclick="goTo('screen-home')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Zurück</div>
+      <div class="logo" style="font-size:17px">fünftersatz</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="hero" style="padding-bottom:16px">
+      <div class="hero-eyebrow">Binaural Beats</div>
+      <div class="hero-title" style="font-size:42px">FREQUENZEN<br>FÜR <span style="color:var(--accent3)">DEINEN FLOW</span></div>
+    </div>
+    <div class="player-card">
+      <div class="wave-viz">
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+      <div style="font-size:18px;font-weight:500;margin-bottom:4px" id="trackName">Focus Alpha · 10 Hz</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:22px" id="trackSub">Ruhige Konzentration · Vor dem Match</div>
+      <div style="display:flex;align-items:center;gap:18px">
+        <button class="play-btn" onclick="togglePlay()"><svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="progressTime">0:00 / 20:00</div>
+          <div style="height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div id="progressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent));border-radius:4px;transition:.3s"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-label">Frequenz wählen</div>
+    <div class="beat-list">
+      <div class="beat-item active" onclick="selectBeat(this,'Focus Alpha · 10 Hz','Ruhige Konzentration · Vor dem Match')">
+        <div class="beat-dot" style="background:#7b6cff"></div>
+        <div><div style="font-size:15px;font-weight:500">Focus Alpha</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Konzentration · Vor dem Match</div></div>
+        <div class="beat-hz" style="color:#7b6cff">10 Hz</div>
+      </div>
+      <div class="beat-item" onclick="selectBeat(this,'Deep Flow · 6 Hz','Theta-Wellen · Visualisierung & Intuition')">
+        <div class="beat-dot" style="background:var(--accent)"></div>
+        <div><div style="font-size:15px;font-weight:500">Deep Flow</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Visualisierung & Intuition</div></div>
+        <div class="beat-hz" style="color:var(--accent)">6 Hz</div>
+      </div>
+      <div class="beat-item" onclick="selectBeat(this,'Power Up · 20 Hz','Beta-Aktivierung · Energie & Reaktion')">
+        <div class="beat-dot" style="background:var(--accent2)"></div>
+        <div><div style="font-size:15px;font-weight:500">Power Up</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Energie & Reaktionsschnelle</div></div>
+        <div class="beat-hz" style="color:var(--accent2)">20 Hz</div>
+      </div>
+      <div class="beat-item" onclick="selectBeat(this,'Reset · 4 Hz','Delta-Entspannung · Nach dem Match')">
+        <div class="beat-dot" style="background:#f5a623"></div>
+        <div><div style="font-size:15px;font-weight:500">Reset</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Entspannung · Nach dem Match</div></div>
+        <div class="beat-hz" style="color:#f5a623">4 Hz</div>
+      </div>
+    </div>
+    <div class="section-label">Affirmationen</div>
+    <div class="aff-card">
+      <div class="aff-text" id="affText">"ICH SPIELE DEN BALL – NICHT DAS ERGEBNIS."</div>
+      <button class="aff-btn" onclick="nextAff()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>Nächste Affirmation</button>
+      <button class="aff-btn rec-btn" onclick="toggleRec()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>Eigenen Satz einsprechen</button>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ANALYSE -->
+  <div class="screen" id="screen-analyse">
+    <div class="topbar" style="flex-shrink:0">
+      <div class="back-btn" onclick="goTo('screen-home')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Zurück</div>
+      <div class="logo" style="font-size:17px">fünftersatz</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="hero" style="padding-bottom:16px">
+      <div class="hero-eyebrow">Letzte 8 Matches</div>
+      <div class="hero-title" style="font-size:42px">DEINE<br><span class="hl">MUSTER</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div><div style="font-size:17px;font-weight:500">VH-Abschluss nach Vorspiel</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Nach 3+ Noppen-Bällen</div></div>
+        <div class="stat-badge badge-warn">Schwäche</div>
+      </div>
+      <div class="bar-row"><div class="bar-label">Erfolgsquote</div><div class="bar-track"><div class="bar-fill" style="background:var(--accent2)" data-w="31"></div></div><div style="font-size:13px;font-weight:500;color:var(--accent2);width:30px;text-align:right">31%</div></div>
+      <div class="bar-row"><div class="bar-label">Ø Störspieler</div><div class="bar-track"><div class="bar-fill" style="background:var(--muted)" data-w="58"></div></div><div style="font-size:13px;font-weight:500;color:var(--muted);width:30px;text-align:right">58%</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div><div style="font-size:17px;font-weight:500">Störspiel-Effektivität</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Erzwungene Fehler durch Noppe</div></div>
+        <div class="stat-badge badge-good">Stärke</div>
+      </div>
+      <div class="bar-row"><div class="bar-label">Dein Wert</div><div class="bar-track"><div class="bar-fill" style="background:var(--accent)" data-w="74"></div></div><div style="font-size:13px;font-weight:500;color:var(--accent);width:30px;text-align:right">74%</div></div>
+      <div class="bar-row"><div class="bar-label">Ø Störspieler</div><div class="bar-track"><div class="bar-fill" style="background:var(--muted)" data-w="52"></div></div><div style="font-size:13px;font-weight:500;color:var(--muted);width:30px;text-align:right">52%</div></div>
+    </div>
+    <div class="insight-card">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>KI-Insight</div>
+      <p style="font-size:14px;color:var(--text);line-height:1.7;font-weight:300">Du bereitest Punkte mit den Noppen überdurchschnittlich gut vor – <strong style="color:var(--accent)">74%</strong> erzwungene Fehler. Das Problem: Wenn der Ball zum Abschluss kommt, fehlt die Routine. Das ist kein Technikproblem – das ist <strong style="color:var(--accent)">Erwartungsdruck</strong>. Du spürst "jetzt muss er rein" – und genau das blockiert.</p>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="bottom-nav" id="bottom-nav" style="display:none">
+    <div class="nav-item active" id="nav-home" onclick="goTo('screen-home')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" id="nav-mentor" onclick="goTo('screen-mentor')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/></svg>
+      <div class="nav-label">Mentor</div>
+    </div>
+    <div class="nav-item" id="nav-sound" onclick="goTo('screen-sound')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg>
+      <div class="nav-label">Sound</div>
+    </div>
+    <div class="nav-item" id="nav-analyse" onclick="goTo('screen-analyse')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+      <div class="nav-label">Analyse</div>
+    </div>
+  </nav>
+
+</div>
+<script>
+let currentStep = 0;
+let profile = { name:'', years:'', style:'Störspieler', ttr:1520, goal:'Führungen ausbauen' };
+let chatHistory = [];
+let apiKey = localStorage.getItem('anthropic_key') || '';
+
+function checkApiKey() {
+  if (!apiKey) {
+    const k = prompt('Bitte deinen Anthropic API Key eingeben:');
+    if (k && k.startsWith('sk-')) {
+      apiKey = k;
+      localStorage.setItem('anthropic_key', k);
+    }
+  }
+}
+
+// ── ONBOARDING ──
+function nextStep(n) {
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  document.getElementById('dot-'+currentStep).classList.remove('active');
+  document.getElementById('dot-'+currentStep).classList.add('done');
+  currentStep = n;
+  document.getElementById('step-'+n).classList.add('active');
+  document.getElementById('dot-'+n).classList.add('active');
+  document.getElementById('stepCounter').textContent = (n+1) + ' / 6';
+}
+function checkStep0() {
+  const v = document.getElementById('input-name').value.trim();
+  document.getElementById('btn-0').disabled = !v;
+  if(v) profile.name = v;
+}
+function selectOne(el, group) {
+  el.closest('.option-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  if(group==='style') profile.style = el.querySelector('.option-label').textContent;
+  if(group==='goal') profile.goal = el.querySelector('.option-label').textContent;
+  if(group==='years') { profile.years = el.querySelector('.option-label').textContent; checkStep0(); }
+}
+function updateTTR(v) {
+  profile.ttr = parseInt(v);
+  document.getElementById('ttrDisplay').textContent = v;
+  const labels = [[900,'Einsteiger'],[1200,'Kreisliga'],[1500,'Kreisklasse'],[1700,'Bezirksliga'],[1900,'Verbandsliga'],[2100,'Oberliga'],[2300,'Regionalliga'],[9999,'Bundesliga']];
+  document.getElementById('ttrLabel').textContent = labels.find(l=>parseInt(v)<l[0])[1] + ' · ' + (parseInt(v)<1500?'Aufbauphase':'Solider Vereinsspieler');
+}
+function cycleTag(el) {
+  if(el.classList.contains('selected-strength')) { el.classList.remove('selected-strength'); el.classList.add('selected-weakness'); }
+  else if(el.classList.contains('selected-weakness')) { el.classList.remove('selected-weakness'); }
+  else { el.classList.add('selected-strength'); }
+}
+function finishOnboarding() {
+  const name = document.getElementById('input-name').value.trim() || 'Spieler';
+  profile.name = name;
+  document.getElementById('home-greeting').textContent = 'Willkommen, ' + name;
+  document.getElementById('pill-avatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('pill-name').textContent = name;
+  document.getElementById('pill-ttr').textContent = profile.ttr;
+  document.getElementById('bottom-nav').style.display = 'flex';
+  initChat();
+  goTo('screen-home');
+}
+
+// ── NAVIGATION ──
+const navMap = {'screen-home':'nav-home','screen-mentor':'nav-mentor','screen-sound':'nav-sound','screen-analyse':'nav-analyse'};
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.querySelector('svg')?.setAttribute('stroke','var(--muted)'); });
+  if(navMap[id]) { const el = document.getElementById(navMap[id]); el.classList.add('active'); el.querySelector('svg')?.setAttribute('stroke','var(--accent)'); }
+  if(id==='screen-analyse') setTimeout(animateBars, 200);
+}
+function animateBars() { document.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w + '%'); }
+function selectMood(el) { document.querySelectorAll('.mood-chip').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); }
+
+// ── AI MENTOR ──
+function buildSystemPrompt() {
+  return `Du bist ein erfahrener Tischtennis-Mentalcoach namens "Mentor" in der App "fünftersatz".
+
+SPIELERPROFIL:
+- Name: ${profile.name}
+- Spielstil: ${profile.style}
+- TTR: ${profile.ttr}
+- Stärken: Störspiel, Noppen-Kontrolle, Konstanz
+- Schwächen: VH-Abschluss nach Vorspiel, Routine bei Führung, Nervenstärke
+- Ziel: ${profile.goal}
+
+DEINE ROLLE: Du kennst diesen Spieler genau. Sei direkt, konkret, empathisch. Antworte auf Deutsch, maximal 4-5 Sätze. Nutze **fett** für Schlüsselbegriffe. Gib manchmal eine konkrete Übung mit.`;
+}
+
+async function initChat() {
+  checkApiKey();
+  const name = profile.name || 'Spieler';
+  // Show welcome message
+  appendMentor(`Hey ${name} – schön dass du da bist.\n\nDu spielst lange Noppe auf der Rückhand, bist Störspieler mit ${profile.ttr} TTR. Ich kenne dein Spiel – und ich weiß: Der **Vorhand-Abschluss nach gutem Vorspiel** kostet dich regelmäßig Punkte die du schon in der Tasche hattest.\n\nWoran wollen wir heute arbeiten?`);
+
+  // Pre-load demo conversation with delay for realism
+  const demoConvo = [
+    { role: 'user', text: 'Genau das. Ich bau den Punkt perfekt auf mit der Noppe – und dann wenn ich abschließen könnte, versemmle ich ihn.' },
+    { role: 'mentor', text: 'Das kenne ich. Du arbeitest dich in eine Führungsposition, die Noppe tut ihre Arbeit – und genau in dem Moment wo du abschließen musst, verändert sich etwas.\n\nDas ist kein Armfehler. Das ist **Erwartungsdruck**. Dein Gehirn schaltet vom Prozess auf das Ergebnis: "Jetzt muss er rein." Und diese eine Sekunde kostet dir die Lockerheit.\n\nPassiert das mehr bei wichtigen Punkten – 8:6, 9:7 – oder auch in harmlosen Situationen?' },
+    { role: 'user', text: 'Eher bei wichtigen Punkten. Wenn es egal ist spiel ich ihn oft locker rein.' },
+    { role: 'mentor', text: 'Genau das ist der Beweis: **Deine Vorhand funktioniert.** Das Problem ist der Kontext, nicht die Technik.\n\nWenn du locker spielst, vertraust du deinem Körper. Bei wichtigen Punkten übernimmt der Kopf – und der stört.\n\nMein Tipp: Definiere dir einen **Auslöser-Satz** genau in diesem Moment. Zum Beispiel: *"Ball. Jetzt."* Nicht mehr. Kein Ergebnis, kein Druck – nur der nächste Ball. Probier das bewusst im Training aus.' },
+    { role: 'user', text: 'Ja das passt… "Ball. Jetzt." klingt simpel aber macht Sinn.' },
+    { role: 'mentor', text: 'Simpel ist genau richtig. Unter Druck braucht dein Gehirn einen **kurzen, klaren Befehl** – kein langer Satz, kein Nachdenken.\n\nMach das zur Routine: Nach jedem Noppen-Ball der gut wird, sagst du innerlich "Ball. Jetzt." – egal ob 0:0 oder 10:9. Irgendwann passiert es automatisch auch wenn es zählt. 🏓' }
+  ];
+
+  chatHistory.push({role:'assistant', content: `Hey ${name} – schön dass du da bist. Du spielst lange Noppe auf der Rückhand, bist Störspieler mit ${profile.ttr} TTR. Ich kenne dein Spiel – und ich weiß: Der Vorhand-Abschluss nach gutem Vorspiel kostet dich regelmäßig Punkte die du schon in der Tasche hattest. Woran wollen wir heute arbeiten?`});
+
+  let delay = 800;
+  for (const msg of demoConvo) {
+    await new Promise(r => setTimeout(r, delay));
+    if (msg.role === 'user') {
+      appendUser(msg.text);
+      chatHistory.push({role:'user', content: msg.text});
+      delay = 1200;
+    } else {
+      showTyping();
+      await new Promise(r => setTimeout(r, 1000));
+      document.getElementById('typing')?.remove();
+      appendMentor(msg.text);
+      chatHistory.push({role:'assistant', content: msg.text});
+      delay = 900;
+    }
+  }
+  // Hide quick replies since convo already started
+  document.getElementById('quick-replies').style.display = 'none';
+}
+
+function appendMentor(text) {
+  const feed = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:10px;align-items:flex-start;animation:fadeUp .3s ease';
+  const av = document.createElement('div');
+  av.style.cssText = 'width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7b6cff,#00e5a0);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px';
+  av.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/></svg>';
+  const bbl = document.createElement('div');
+  bbl.style.cssText = 'background:#161a22;border:2px solid rgba(255,255,255,.07);border-radius:16px 16px 16px 3px;padding:15px 17px;font-size:14px;line-height:1.7;font-weight:300;flex:1';
+  bbl.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--accent);font-weight:500">$1</strong>').replace(/\n/g,'<br>');
+  div.appendChild(av); div.appendChild(bbl);
+  feed.appendChild(div);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function appendUser(text) {
+  const feed = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;justify-content:flex-end;animation:fadeUp .3s ease';
+  const bbl = document.createElement('div');
+  bbl.style.cssText = 'background:rgba(123,108,255,.12);border:2px solid rgba(123,108,255,.2);border-radius:16px 16px 3px 16px;padding:14px 17px;font-size:14px;line-height:1.6;max-width:82%';
+  bbl.textContent = text;
+  div.appendChild(bbl); feed.appendChild(div);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function showTyping() {
+  const feed = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.id = 'typing'; div.style.cssText = 'display:flex;gap:10px;align-items:center;animation:fadeUp .3s ease';
+  div.innerHTML = `<div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7b6cff,#00e5a0);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/></svg></div><div style="background:#161a22;border:2px solid rgba(255,255,255,.07);border-radius:16px 16px 16px 3px;padding:14px 18px;display:flex;gap:5px;align-items:center"><div style="width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 1.2s infinite"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 1.2s .2s infinite"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 1.2s .4s infinite"></div></div>`;
+  feed.appendChild(div); feed.scrollTop = feed.scrollHeight;
+}
+
+
+function getSimulatedReply(text) {
+  const t = text.toLowerCase();
+  const name = profile.name || 'Fabian';
+  const history = chatHistory.map(m => m.content).join(' ').toLowerCase();
+
+  // Führung / Druck / Nervosität
+  if(t.match(/führ|nervös|zitter|druck|wichtig|match|spiel|punkt|satz/)) {
+    return `Das ist das klassische Muster – und du bist damit nicht allein.
+
+Wenn der Punkt wichtig wird, schaltet dein Gehirn vom **Spielmodus** in den **Kontrollmodus**. Du denkst ans Ergebnis statt an den nächsten Ball.
+
+Konkrete Übung: Entwickle eine feste **Pre-Point-Routine** – immer dieselbe Bewegung bevor du aufschlägst. Ball auftippen, tief ausatmen, "Ball. Jetzt." Das bringt dich zurück in den Moment.`;
+  }
+  // VH / Abschluss / Vorhand
+  if(t.match(/vorhand|vh|abschluss|schlag|finish|rein|versemm|fehler/)) {
+    return `Dein Vorhand-Abschluss **funktioniert** – das weißt du selbst, weil er im Training oft sitzt.
+
+Das Problem ist der Kontext: Sobald du merkst "jetzt hab ich ihn", übernimmt der Kopf. Die Muskulatur ist bereit, aber der Gedanke "jetzt muss er rein" kostet dir die Lockerheit.
+
+**Tipp:** Statt auf den Abschluss zu fokussieren – fokussiere auf den Treffpunkt. Nur den Ball, nur die Bewegung. Kein Ergebnis.`;
+  }
+  // Noppe / Material / Gegner liest
+  if(t.match(/nopp|material|belag|gegner|liest|durchschau|anti|kurz/)) {
+    return `Dass Gegner dein Noppenspiel lesen ist eigentlich ein **Kompliment** – dein Störspiel wirkt, sie müssen sich anpassen.
+
+Die Lösung ist **Variation**: Wechsle unvorhersehbarer zwischen Noppe und Glattbelag, variiere Tempo und Platzierung. Und mental: Wenn ein Gegner sich anpasst, ist das Information – kein Versagen. Analysiere es, passe an, bleib ruhig.`;
+  }
+  // Training / üben
+  if(t.match(/train|üb|übung|praxis|tipp|wie|verbessern/)) {
+    return `Gute Frage – hier sind drei Sachen die du **sofort** umsetzen kannst:
+
+1. **Visualisierung** vor dem Schlafen: 5x den perfekten VH-Abschluss im Kopf durchlaufen – Noppe, kurzer Ball, Schlag.
+2. **Auslöser-Satz** im Match: "Ball. Jetzt." – immer wenn der Abschlussmoment kommt.
+3. **Drucksituationen trainieren**: Spiel Übungen ab 8:8 – gewöhne deinen Kopf an den Kontext.`;
+  }
+  // Niederlage / verloren / frustriert
+  if(t.match(/verlor|niederlag|frustr|schlecht|mist|scheiß|ärger/)) {
+    return `Das tut weh – das kenn ich.
+
+Aber kurze Frage: War es ein **Technikproblem** oder war es dein Kopf? Wenn du ehrlich bist, weißt du meistens die Antwort.
+
+Niederlagen sind Daten. Nicht Urteile. Was war heute der eine Moment wo du gespürt hast dass es kippt?`;
+  }
+  // Positiv / gut / gewonnen
+  if(t.match(/gewinn|super|gut|klasse|toll|funktioniert|geklappt|top/)) {
+    return `${name}, das ist wichtig – **merk dir dieses Gefühl genau.**
+
+Was war anders als sonst? Wie war dein Kopf in den wichtigen Momenten? Je mehr du verstehst was dich in diesen Flow-Zustand bringt, desto öfter kannst du ihn gezielt abrufen.`;
+  }
+  // Frage nach App / Mentor
+  if(t.match(/app|mentor|fünftersatz|funktion|feature/)) {
+    return `fünftersatz ist noch in der Entwicklung – aber genau für solche Gespräche wie diesen hier gedacht.
+
+Die Idee: Ein Mentor der dich **wirklich kennt** – dein Material, deine Muster, deine Schwächen – und der vor jedem Match, nach jeder Niederlage, mitten in der Nacht im Bett für dich da ist. 😄`;
+  }
+  // Short/unclear input
+  if(text.length < 20) {
+    return `Erzähl mir mehr – was meinst du genau? Je konkreter du bist, desto gezielter kann ich dir helfen.`;
+  }
+  // Default thoughtful response
+  const defaults = [
+    `Interessant – das klingt nach einem Muster das wir genauer anschauen sollten.
+
+Wann passiert das am häufigsten – in welchen Spielsituationen? Gegen bestimmte Gegnertypen oder eher generell?`,
+    `Das kenne ich von vielen Störspielern auf deinem Niveau.
+
+Der Schlüssel ist meistens nicht Technik, sondern **wann** das Problem auftritt. Magst du ein konkretes Beispiel aus dem letzten Match beschreiben?`,
+    `Guter Punkt. Lass uns das konkret machen – was wäre für dich nächste Woche ein **kleiner aber spürbarer Fortschritt** in diesem Bereich?`
+  ];
+  return defaults[chatHistory.length % defaults.length];
+}
+
+async function doSend(text) {
+  appendUser(text);
+  chatHistory.push({role:'user',content:text});
+  document.getElementById('quick-replies').style.display = 'none';
+  showTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20240620',
+        max_tokens: 1000,
+        system: buildSystemPrompt(),
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Entschuldigung, keine Antwort erhalten.';
+    document.getElementById('typing')?.remove();
+    appendMentor(reply);
+    chatHistory.push({role:'assistant', content:reply});
+  } catch(e) {
+    document.getElementById('typing')?.remove();
+    appendMentor('Verbindungsfehler – bitte nochmal versuchen.');
+  }
+}
+function sendMessage() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+  doSend(text);
+}
+function sendQuick(text) { doSend(text); }
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+
+// ── SOUND ──
+let playing=false, progress=0, timer;
+function togglePlay() {
+  playing=!playing;
+  const icon=document.getElementById('playIcon');
+  if(playing) icon.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  else icon.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
+  document.querySelectorAll('.wave-bar').forEach(b=>b.style.animationPlayState=playing?'running':'paused');
+  if(playing) {
+    timer=setInterval(()=>{
+      progress=Math.min(progress+0.083,100);
+      document.getElementById('progressFill').style.width=progress+'%';
+      const s=Math.round(progress*12),m=Math.floor(s/60),sec=s%60;
+      document.getElementById('progressTime').textContent=m+':'+sec.toString().padStart(2,'0')+' / 20:00';
+      if(progress>=100){clearInterval(timer);playing=false;icon.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';}
+    },300);
+  } else clearInterval(timer);
+}
+function selectBeat(el,name,sub) {
+  document.querySelectorAll('.beat-item').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('trackName').textContent=name;
+  document.getElementById('trackSub').textContent=sub;
+  progress=0; document.getElementById('progressFill').style.width='0%';
+  document.getElementById('progressTime').textContent='0:00 / 20:00';
+}
+const affs=['"ICH SPIELE DEN BALL – NICHT DAS ERGEBNIS."','"JEDER PUNKT IST EIN NEUANFANG."','"MEIN STÖRSPIEL IST MEINE STÄRKE."','"ICH BLEIBE RUHIG WENN ES ZÄHLT."','"ICH VERTRAUE MEINER ROUTINE."','"DER NÄCHSTE PUNKT GEHÖRT MIR."'];
+let affIdx=0;
+function nextAff() {
+  affIdx=(affIdx+1)%affs.length;
+  const el=document.getElementById('affText');
+  el.style.opacity='0';
+  setTimeout(()=>{el.textContent=affs[affIdx];el.style.opacity='1';},250);
+}
+let rec=false;
+function toggleRec() {
+  rec=!rec;
+  document.getElementById('affText').textContent=rec?'Sprich deinen Satz...':'"DEINE AUFNAHME GESPEICHERT ✓"';
+}
+</script>
+</body>
+</html>
