@@ -954,10 +954,11 @@ DEINE ROLLE:
 }
 
 function initChat() {
+  checkApiKey();
   const name = profile.name || 'Spieler';
-  const welcomeText = `Hey ${name} – schön, dass du da bist.
-
-Du spielst lange Noppe auf der Rückhand, bist Störspieler mit ${profile.ttr || 1520} TTR. Ich kenne dein Spiel – und ich weiß: Der **Vorhand-Abschluss nach gutem Vorspiel** kostet dich regelmäßig Punkte die du schon in der Tasche hattest.
+  const style = profile.style ? ` Du spielst als ${profile.style}` : '';
+  const goal = profile.goal ? ` Dein Ziel: ${profile.goal}.` : '';
+  const welcomeText = `Hey ${name} – schön, dass du da bist.${style}.${goal}
 
 Woran wollen wir heute arbeiten?`;
   appendMentorBubble(welcomeText);
