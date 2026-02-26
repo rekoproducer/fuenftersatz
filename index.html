@@ -197,7 +197,7 @@
             <div class="opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
             <div><div class="option-label">Allround</div><div class="option-sub">Vielseitig, anpassungsfähig</div></div>
           </div>
-          <div class="option-btn selected" onclick="selectOne(this,'style')">
+          <div class="option-btn" onclick="selectOne(this,'style')">
             <div class="opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg></div>
             <div><div class="option-label">Störspieler</div><div class="option-sub">Noppe, Anti, Variation</div></div>
           </div>
@@ -211,7 +211,7 @@
         <div class="step-sub">Welche Beläge spielst du? Mehrfachauswahl möglich.</div>
         <div class="option-grid">
           <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Vorhand: Glattbelag</div><div class="option-sub">Standard Topspin-Belag</div></div></div>
-          <div class="option-btn selected" onclick="this.classList.toggle('selected')"><div><div class="option-label">Rückhand: Lange Noppe</div><div class="option-sub">Störeffekt, Konterspiel</div></div></div>
+          <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Rückhand: Lange Noppe</div><div class="option-sub">Störeffekt, Konterspiel</div></div></div>
           <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Kurze Noppe</div><div class="option-sub">Schnelles Konter, wenig Effekt</div></div></div>
           <div class="option-btn" onclick="this.classList.toggle('selected')"><div><div class="option-label">Anti-Topspin</div><div class="option-sub">Effektumkehr, Abwehr</div></div></div>
         </div>
@@ -222,9 +222,9 @@
         <div class="step-eyebrow">Schritt 4</div>
         <div class="step-title">DEIN NIVEAU</div>
         <div class="step-sub">TTR-Wert – damit dein Mentor auf deinem Level spricht.</div>
-        <div class="ttr-display" id="ttrDisplay">1520</div>
+        <div class="ttr-display" id="ttrDisplay">1200</div>
         <div class="ttr-label" id="ttrLabel">Bezirksliga · Solider Vereinsspieler</div>
-        <input type="range" min="500" max="2800" value="1520" step="10" oninput="updateTTR(this.value)">
+        <input type="range" min="500" max="2800" value="1200" step="10" oninput="updateTTR(this.value)">
         <div class="slider-labels"><span>Einsteiger</span><span>Bezirk</span><span>Verband</span><span>Bundesliga</span></div>
         <button class="next-btn" onclick="nextStep(4)">Weiter <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
@@ -259,7 +259,7 @@
         <div class="step-sub">Dein mentales Hauptziel.</div>
         <div class="option-grid">
           <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">Ruhiger unter Druck</div><div class="option-sub">Enge Spielstände meistern</div></div></div>
-          <div class="option-btn selected" onclick="selectOne(this,'goal')"><div><div class="option-label">Führungen ausbauen</div><div class="option-sub">Nicht mehr zittern bei 8:6</div></div></div>
+          <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">Führungen ausbauen</div><div class="option-sub">Nicht mehr zittern bei 8:6</div></div></div>
           <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">Konstanter werden</div><div class="option-sub">Weniger Formschwankungen</div></div></div>
           <div class="option-btn" onclick="selectOne(this,'goal')"><div><div class="option-label">TTR steigern</div><div class="option-sub">Nächste Spielklasse</div></div></div>
         </div>
@@ -289,7 +289,7 @@
         <div style="font-size:13px;font-weight:500" id="pill-name">Spielerprofil</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Störspieler · Lange Noppe</div>
       </div>
-      <div class="pill-ttr" id="pill-ttr">1520</div>
+      <div class="pill-ttr" id="pill-ttr">1200</div>
     </div>
     <div class="section-label">Wie geht's dir gerade?</div>
     <div class="mood-row">
@@ -564,229 +564,6 @@ DEINE ROLLE: Du kennst diesen Spieler genau. Sei direkt, konkret, empathisch. An
 async function initChat() {
   checkApiKey();
   const name = profile.name || 'Spieler';
-  // Show welcome message
-  appendMentor(`Hey ${name} – schön dass du da bist.\n\nDu spielst lange Noppe auf der Rückhand, bist Störspieler mit ${profile.ttr} TTR. Ich kenne dein Spiel – und ich weiß: Der **Vorhand-Abschluss nach gutem Vorspiel** kostet dich regelmäßig Punkte die du schon in der Tasche hattest.\n\nWoran wollen wir heute arbeiten?`);
+  appendMentor(`Hey ${name} – schön dass du da bist. Ich bin dein persönlicher Mentor.\n\nWoran möchtest du heute arbeiten?`);
 
-  // Pre-load demo conversation with delay for realism
-  const demoConvo = [
-    { role: 'user', text: 'Genau das. Ich bau den Punkt perfekt auf mit der Noppe – und dann wenn ich abschließen könnte, versemmle ich ihn.' },
-    { role: 'mentor', text: 'Das kenne ich. Du arbeitest dich in eine Führungsposition, die Noppe tut ihre Arbeit – und genau in dem Moment wo du abschließen musst, verändert sich etwas.\n\nDas ist kein Armfehler. Das ist **Erwartungsdruck**. Dein Gehirn schaltet vom Prozess auf das Ergebnis: "Jetzt muss er rein." Und diese eine Sekunde kostet dir die Lockerheit.\n\nPassiert das mehr bei wichtigen Punkten – 8:6, 9:7 – oder auch in harmlosen Situationen?' },
-    { role: 'user', text: 'Eher bei wichtigen Punkten. Wenn es egal ist spiel ich ihn oft locker rein.' },
-    { role: 'mentor', text: 'Genau das ist der Beweis: **Deine Vorhand funktioniert.** Das Problem ist der Kontext, nicht die Technik.\n\nWenn du locker spielst, vertraust du deinem Körper. Bei wichtigen Punkten übernimmt der Kopf – und der stört.\n\nMein Tipp: Definiere dir einen **Auslöser-Satz** genau in diesem Moment. Zum Beispiel: *"Ball. Jetzt."* Nicht mehr. Kein Ergebnis, kein Druck – nur der nächste Ball. Probier das bewusst im Training aus.' },
-    { role: 'user', text: 'Ja das passt… "Ball. Jetzt." klingt simpel aber macht Sinn.' },
-    { role: 'mentor', text: 'Simpel ist genau richtig. Unter Druck braucht dein Gehirn einen **kurzen, klaren Befehl** – kein langer Satz, kein Nachdenken.\n\nMach das zur Routine: Nach jedem Noppen-Ball der gut wird, sagst du innerlich "Ball. Jetzt." – egal ob 0:0 oder 10:9. Irgendwann passiert es automatisch auch wenn es zählt. 🏓' }
-  ];
-
-  chatHistory.push({role:'assistant', content: `Hey ${name} – schön dass du da bist. Du spielst lange Noppe auf der Rückhand, bist Störspieler mit ${profile.ttr} TTR. Ich kenne dein Spiel – und ich weiß: Der Vorhand-Abschluss nach gutem Vorspiel kostet dich regelmäßig Punkte die du schon in der Tasche hattest. Woran wollen wir heute arbeiten?`});
-
-  let delay = 800;
-  for (const msg of demoConvo) {
-    await new Promise(r => setTimeout(r, delay));
-    if (msg.role === 'user') {
-      appendUser(msg.text);
-      chatHistory.push({role:'user', content: msg.text});
-      delay = 1200;
-    } else {
-      showTyping();
-      await new Promise(r => setTimeout(r, 1000));
-      document.getElementById('typing')?.remove();
-      appendMentor(msg.text);
-      chatHistory.push({role:'assistant', content: msg.text});
-      delay = 900;
-    }
-  }
-  // Hide quick replies since convo already started
-  document.getElementById('quick-replies').style.display = 'none';
-}
-
-function appendMentor(text) {
-  const feed = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.style.cssText = 'display:flex;gap:10px;align-items:flex-start;animation:fadeUp .3s ease';
-  const av = document.createElement('div');
-  av.style.cssText = 'width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7b6cff,#00e5a0);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px';
-  av.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/></svg>';
-  const bbl = document.createElement('div');
-  bbl.style.cssText = 'background:#161a22;border:2px solid rgba(255,255,255,.07);border-radius:16px 16px 16px 3px;padding:15px 17px;font-size:14px;line-height:1.7;font-weight:300;flex:1';
-  bbl.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--accent);font-weight:500">$1</strong>').replace(/\n/g,'<br>');
-  div.appendChild(av); div.appendChild(bbl);
-  feed.appendChild(div);
-  feed.scrollTop = feed.scrollHeight;
-}
-
-function appendUser(text) {
-  const feed = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.style.cssText = 'display:flex;justify-content:flex-end;animation:fadeUp .3s ease';
-  const bbl = document.createElement('div');
-  bbl.style.cssText = 'background:rgba(123,108,255,.12);border:2px solid rgba(123,108,255,.2);border-radius:16px 16px 3px 16px;padding:14px 17px;font-size:14px;line-height:1.6;max-width:82%';
-  bbl.textContent = text;
-  div.appendChild(bbl); feed.appendChild(div);
-  feed.scrollTop = feed.scrollHeight;
-}
-
-function showTyping() {
-  const feed = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.id = 'typing'; div.style.cssText = 'display:flex;gap:10px;align-items:center;animation:fadeUp .3s ease';
-  div.innerHTML = `<div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7b6cff,#00e5a0);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/></svg></div><div style="background:#161a22;border:2px solid rgba(255,255,255,.07);border-radius:16px 16px 16px 3px;padding:14px 18px;display:flex;gap:5px;align-items:center"><div style="width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 1.2s infinite"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 1.2s .2s infinite"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 1.2s .4s infinite"></div></div>`;
-  feed.appendChild(div); feed.scrollTop = feed.scrollHeight;
-}
-
-
-function getSimulatedReply(text) {
-  const t = text.toLowerCase();
-  const name = profile.name || 'Fabian';
-  const history = chatHistory.map(m => m.content).join(' ').toLowerCase();
-
-  // Führung / Druck / Nervosität
-  if(t.match(/führ|nervös|zitter|druck|wichtig|match|spiel|punkt|satz/)) {
-    return `Das ist das klassische Muster – und du bist damit nicht allein.
-
-Wenn der Punkt wichtig wird, schaltet dein Gehirn vom **Spielmodus** in den **Kontrollmodus**. Du denkst ans Ergebnis statt an den nächsten Ball.
-
-Konkrete Übung: Entwickle eine feste **Pre-Point-Routine** – immer dieselbe Bewegung bevor du aufschlägst. Ball auftippen, tief ausatmen, "Ball. Jetzt." Das bringt dich zurück in den Moment.`;
-  }
-  // VH / Abschluss / Vorhand
-  if(t.match(/vorhand|vh|abschluss|schlag|finish|rein|versemm|fehler/)) {
-    return `Dein Vorhand-Abschluss **funktioniert** – das weißt du selbst, weil er im Training oft sitzt.
-
-Das Problem ist der Kontext: Sobald du merkst "jetzt hab ich ihn", übernimmt der Kopf. Die Muskulatur ist bereit, aber der Gedanke "jetzt muss er rein" kostet dir die Lockerheit.
-
-**Tipp:** Statt auf den Abschluss zu fokussieren – fokussiere auf den Treffpunkt. Nur den Ball, nur die Bewegung. Kein Ergebnis.`;
-  }
-  // Noppe / Material / Gegner liest
-  if(t.match(/nopp|material|belag|gegner|liest|durchschau|anti|kurz/)) {
-    return `Dass Gegner dein Noppenspiel lesen ist eigentlich ein **Kompliment** – dein Störspiel wirkt, sie müssen sich anpassen.
-
-Die Lösung ist **Variation**: Wechsle unvorhersehbarer zwischen Noppe und Glattbelag, variiere Tempo und Platzierung. Und mental: Wenn ein Gegner sich anpasst, ist das Information – kein Versagen. Analysiere es, passe an, bleib ruhig.`;
-  }
-  // Training / üben
-  if(t.match(/train|üb|übung|praxis|tipp|wie|verbessern/)) {
-    return `Gute Frage – hier sind drei Sachen die du **sofort** umsetzen kannst:
-
-1. **Visualisierung** vor dem Schlafen: 5x den perfekten VH-Abschluss im Kopf durchlaufen – Noppe, kurzer Ball, Schlag.
-2. **Auslöser-Satz** im Match: "Ball. Jetzt." – immer wenn der Abschlussmoment kommt.
-3. **Drucksituationen trainieren**: Spiel Übungen ab 8:8 – gewöhne deinen Kopf an den Kontext.`;
-  }
-  // Niederlage / verloren / frustriert
-  if(t.match(/verlor|niederlag|frustr|schlecht|mist|scheiß|ärger/)) {
-    return `Das tut weh – das kenn ich.
-
-Aber kurze Frage: War es ein **Technikproblem** oder war es dein Kopf? Wenn du ehrlich bist, weißt du meistens die Antwort.
-
-Niederlagen sind Daten. Nicht Urteile. Was war heute der eine Moment wo du gespürt hast dass es kippt?`;
-  }
-  // Positiv / gut / gewonnen
-  if(t.match(/gewinn|super|gut|klasse|toll|funktioniert|geklappt|top/)) {
-    return `${name}, das ist wichtig – **merk dir dieses Gefühl genau.**
-
-Was war anders als sonst? Wie war dein Kopf in den wichtigen Momenten? Je mehr du verstehst was dich in diesen Flow-Zustand bringt, desto öfter kannst du ihn gezielt abrufen.`;
-  }
-  // Frage nach App / Mentor
-  if(t.match(/app|mentor|fünftersatz|funktion|feature/)) {
-    return `fünftersatz ist noch in der Entwicklung – aber genau für solche Gespräche wie diesen hier gedacht.
-
-Die Idee: Ein Mentor der dich **wirklich kennt** – dein Material, deine Muster, deine Schwächen – und der vor jedem Match, nach jeder Niederlage, mitten in der Nacht im Bett für dich da ist. 😄`;
-  }
-  // Short/unclear input
-  if(text.length < 20) {
-    return `Erzähl mir mehr – was meinst du genau? Je konkreter du bist, desto gezielter kann ich dir helfen.`;
-  }
-  // Default thoughtful response
-  const defaults = [
-    `Interessant – das klingt nach einem Muster das wir genauer anschauen sollten.
-
-Wann passiert das am häufigsten – in welchen Spielsituationen? Gegen bestimmte Gegnertypen oder eher generell?`,
-    `Das kenne ich von vielen Störspielern auf deinem Niveau.
-
-Der Schlüssel ist meistens nicht Technik, sondern **wann** das Problem auftritt. Magst du ein konkretes Beispiel aus dem letzten Match beschreiben?`,
-    `Guter Punkt. Lass uns das konkret machen – was wäre für dich nächste Woche ein **kleiner aber spürbarer Fortschritt** in diesem Bereich?`
-  ];
-  return defaults[chatHistory.length % defaults.length];
-}
-
-async function doSend(text) {
-  appendUser(text);
-  chatHistory.push({role:'user',content:text});
-  document.getElementById('quick-replies').style.display = 'none';
-  showTyping();
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20240620',
-        max_tokens: 1000,
-        system: buildSystemPrompt(),
-        messages: chatHistory
-      })
-    });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || 'Entschuldigung, keine Antwort erhalten.';
-    document.getElementById('typing')?.remove();
-    appendMentor(reply);
-    chatHistory.push({role:'assistant', content:reply});
-  } catch(e) {
-    document.getElementById('typing')?.remove();
-    appendMentor('Verbindungsfehler – bitte nochmal versuchen.');
-  }
-}
-function sendMessage() {
-  const inp = document.getElementById('chat-input');
-  const text = inp.value.trim();
-  if(!text) return;
-  inp.value = ''; inp.style.height = 'auto';
-  doSend(text);
-}
-function sendQuick(text) { doSend(text); }
-function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
-function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
-
-// ── SOUND ──
-let playing=false, progress=0, timer;
-function togglePlay() {
-  playing=!playing;
-  const icon=document.getElementById('playIcon');
-  if(playing) icon.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
-  else icon.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
-  document.querySelectorAll('.wave-bar').forEach(b=>b.style.animationPlayState=playing?'running':'paused');
-  if(playing) {
-    timer=setInterval(()=>{
-      progress=Math.min(progress+0.083,100);
-      document.getElementById('progressFill').style.width=progress+'%';
-      const s=Math.round(progress*12),m=Math.floor(s/60),sec=s%60;
-      document.getElementById('progressTime').textContent=m+':'+sec.toString().padStart(2,'0')+' / 20:00';
-      if(progress>=100){clearInterval(timer);playing=false;icon.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';}
-    },300);
-  } else clearInterval(timer);
-}
-function selectBeat(el,name,sub) {
-  document.querySelectorAll('.beat-item').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('trackName').textContent=name;
-  document.getElementById('trackSub').textContent=sub;
-  progress=0; document.getElementById('progressFill').style.width='0%';
-  document.getElementById('progressTime').textContent='0:00 / 20:00';
-}
-const affs=['"ICH SPIELE DEN BALL – NICHT DAS ERGEBNIS."','"JEDER PUNKT IST EIN NEUANFANG."','"MEIN STÖRSPIEL IST MEINE STÄRKE."','"ICH BLEIBE RUHIG WENN ES ZÄHLT."','"ICH VERTRAUE MEINER ROUTINE."','"DER NÄCHSTE PUNKT GEHÖRT MIR."'];
-let affIdx=0;
-function nextAff() {
-  affIdx=(affIdx+1)%affs.length;
-  const el=document.getElementById('affText');
-  el.style.opacity='0';
-  setTimeout(()=>{el.textContent=affs[affIdx];el.style.opacity='1';},250);
-}
-let rec=false;
-function toggleRec() {
-  rec=!rec;
-  document.getElementById('affText').textContent=rec?'Sprich deinen Satz...':'"DEINE AUFNAHME GESPEICHERT ✓"';
-}
-</script>
-</body>
-</html>
+  
