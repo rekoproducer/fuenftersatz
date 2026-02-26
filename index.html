@@ -167,7 +167,7 @@
         <div class="step-eyebrow">Schritt 1</div>
         <div class="step-title">WER BIST DU?</div>
         <div class="step-sub">Damit dein Mentor dich wirklich kennt.</div>
-        <input class="input-field" id="input-name" type="text" placeholder="Dein Vorname" oninput="checkStep0()">
+        <input class="input-field" id="input-name" type="text" placeholder="Dein Vorname" oninput="if(typeof checkStep0==='function')checkStep0()">
         <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Wie lange spielst du schon?</div>
         <div class="option-grid two-col">
           <div class="option-btn" onclick="selectOne(this,'years')"><div><div class="option-label">1–3 Jahre</div></div></div>
@@ -475,7 +475,7 @@
 </div>
 <script>
 let currentStep = 0;
-let profile = { name:'', years:'', style:'Störspieler', ttr:1520, goal:'Führungen ausbauen' };
+let profile = { name:'', years:'', style:'', ttr:1200, material:[], weaknesses:[], goal:'' };
 let chatHistory = [];
 let apiKey = localStorage.getItem('anthropic_key') || '';
 
