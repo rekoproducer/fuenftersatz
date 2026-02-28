@@ -653,6 +653,12 @@
     </div>
   </div>
 
+  <!-- MILESTONE + HISTORY (injected dynamically) -->
+  <div id="milestone-section" style="padding:0 20px 20px;display:none;">
+    <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px;">DEINE REISE</div>
+    <div id="milestone-list"></div>
+  </div>
+
   <!-- ════ SOUND ════ -->
   <div class="screen" id="screen-sound">
     <div class="topbar">
@@ -906,6 +912,36 @@ function goTo(id) {
     const msgs = document.getElementById('chat-messages');
     if(msgs && msgs.children.length === 0) initChat();
   }
+  if(id === 'screen-home') renderHomeMemory();
+}
+
+function renderHomeMemory() {
+  const section = document.getElementById('milestone-section');
+  const list = document.getElementById('milestone-list');
+  if (!section || !list) return;
+
+  const hasMilestones = milestones.length > 0;
+  const hasSessions = sessionMemory.length > 0;
+
+  if (!hasMilestones && !hasSessions) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = '';
+
+  // Session streak
+  if (hasSessions) {
+    const streakEl = document.createElement('div');
+    streakEl.style.cssText = 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;';
+    streakEl.innerHTML = `<div style="font-size:24px;">🏓</div><div><div style="font-size:13px;font-weight:600;color:#fff;">${sessionMemory.length} Session${sessionMemory.length > 1 ? 's' : ''} mit deinem Mentor</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">Letzte: ${sessionMemory[0].date}</div></div>`;
+    list.appendChild(streakEl);
+  }
+
+  // Milestones
+  milestones.slice(0, 3).forEach(m => {
+    const el = document.createElement('div');
+    el.style.cssText = 'background:linear-gradient(135deg,rgba(0,229,160,.08),rgba(123,108,255,.08));border:1px solid rgba(0,229,160,.2);border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;';
+    el.innerHTML = `<div style="font-size:18px;margin-top:1px;">🏆</div><div><div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:.5px;">MEILENSTEIN · ${m.date}</div><div style="font-size:13px;color:#dde;margin-top:4px;line-height:1.5;">"${m.text.slice(0, 100)}${m.text.length > 100 ? '...' : ''}"</div></div>`;
+    list.appendChild(el);
+  });
 }
 
 function animateBars() {
@@ -920,47 +956,156 @@ function selectMood(el) {
 // ── REAL AI MENTOR ──
 let chatHistory = [];
 let apiKey = localStorage.getItem('ft_api_key') || '';
+let sessionMemory = JSON.parse(localStorage.getItem('ft_sessions') || '[]');
+let milestones = JSON.parse(localStorage.getItem('ft_milestones') || '[]');
+let currentSessionId = Date.now();
+
 function checkApiKey() {
-  if (!apiKey) {
-    const k = prompt('Bitte Anthropic API Key eingeben:');
-    if (k && k.trim().startsWith('sk-')) { apiKey = k.trim(); localStorage.setItem('ft_api_key', apiKey); }
+  return new Promise((resolve) => {
+    if (apiKey) { resolve(); return; }
+    showApiKeyInput(resolve);
+  });
+}
+
+function showApiKeyInput(onDone) {
+  // Remove existing if any
+  document.getElementById('api-key-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'api-key-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(13,15,20,.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;';
+  overlay.innerHTML = `
+    <div style="font-size:32px;margin-bottom:16px;">🔑</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:8px;letter-spacing:1px;">API KEY</div>
+    <div style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.6;">Gib deinen Anthropic API Key ein.<br>Er wird nur auf diesem Gerät gespeichert.</div>
+    <input id="api-key-input" type="password" placeholder="sk-ant-..." style="width:100%;max-width:360px;background:#1a1d26;border:2px solid rgba(255,255,255,.15);border-radius:14px;padding:16px 18px;font-size:15px;color:#fff;outline:none;margin-bottom:14px;font-family:'DM Sans',sans-serif;box-sizing:border-box;">
+    <button id="api-key-btn" onclick="submitApiKey()" style="width:100%;max-width:360px;background:var(--accent);border:none;border-radius:14px;padding:18px;font-size:16px;font-weight:600;color:#0d0f14;cursor:pointer;font-family:'DM Sans',sans-serif;">Speichern & starten</button>
+    <div style="font-size:11px;color:var(--muted);margin-top:16px;text-align:center;">Den Key findest du auf console.anthropic.com</div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('api-key-input')?.focus(), 100);
+  window._apiKeyResolve = onDone;
+}
+
+function submitApiKey() {
+  const k = document.getElementById('api-key-input')?.value?.trim();
+  if (k && k.startsWith('sk-')) {
+    apiKey = k;
+    localStorage.setItem('ft_api_key', k);
+    document.getElementById('api-key-overlay')?.remove();
+    if (window._apiKeyResolve) { window._apiKeyResolve(); window._apiKeyResolve = null; }
+  } else {
+    const inp = document.getElementById('api-key-input');
+    if (inp) { inp.style.borderColor = 'var(--accent2)'; inp.placeholder = 'Key muss mit sk- beginnen...'; }
   }
+}
+
+function saveSession() {
+  if (chatHistory.length < 2) return;
+  const msgs = chatHistory.filter(m => m.role === 'user').map(m => m.content);
+  const session = {
+    id: currentSessionId,
+    date: new Date().toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric'}),
+    dateRaw: new Date().toISOString(),
+    topics: msgs.slice(0, 3),
+    messageCount: chatHistory.length
+  };
+  sessionMemory = sessionMemory.filter(s => s.id !== currentSessionId);
+  sessionMemory.unshift(session);
+  if (sessionMemory.length > 10) sessionMemory = sessionMemory.slice(0, 10);
+  localStorage.setItem('ft_sessions', JSON.stringify(sessionMemory));
+}
+
+function checkForMilestone(text) {
+  const keywords = ['verstanden', 'klappt', 'funktioniert', 'geschafft', 'umgesetzt', 'besser', 'gewonnen', 'durchbruch', 'endlich', 'heute hat es'];
+  const lower = text.toLowerCase();
+  if (keywords.some(k => lower.includes(k)) && text.length > 30) {
+    const milestone = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}),
+      text: text.slice(0, 120),
+      session: currentSessionId
+    };
+    milestones.unshift(milestone);
+    if (milestones.length > 20) milestones = milestones.slice(0, 20);
+    localStorage.setItem('ft_milestones', JSON.stringify(milestones));
+    setTimeout(() => showMilestoneToast(), 500);
+  }
+}
+
+function showMilestoneToast() {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#00e5a0,#7b6cff);color:#0d0f14;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;z-index:9999;animation:fadeUp .3s ease;box-shadow:0 8px 24px rgba(0,229,160,.3);';
+  toast.textContent = '🏆 Meilenstein gespeichert!';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function getSessionContext() {
+  if (sessionMemory.length === 0) return '';
+  const recent = sessionMemory.slice(0, 3);
+  let ctx = '\n\nSESSION-VERLAUF (letzte Gespräche):';
+  recent.forEach((s, i) => {
+    ctx += `\n- Session ${s.date}: "${s.topics[0] || 'kein Thema'}"`;
+    if (s.topics[1]) ctx += ` → "${s.topics[1]}"`;
+  });
+  if (milestones.length > 0) {
+    ctx += '\n\nMEILENSTEINE DES SPIELERS:';
+    milestones.slice(0, 3).forEach(m => {
+      ctx += `\n- ${m.date}: "${m.text.slice(0, 80)}"`;
+    });
+  }
+  return ctx;
 }
 let quickRepliesShown = true;
 
 function buildSystemPrompt() {
-  return `Du bist ein erfahrener Tischtennis-Mentalcoach und Sportpsychologe namens "Mentor" in der App "fünftersatz".
+  const strengths = (profile.strengths || []).join(', ') || 'noch nicht angegeben';
+  const weaknesses = (profile.weaknesses || []).join(', ') || 'noch nicht angegeben';
+  const material = (profile.material || []).join(', ') || 'Standard';
+  return `Du bist ein erfahrener Tischtennis-Mentalcoach namens "Mentor" in der App "fünftersatz". Du bist kein generischer Coach – du kennst diesen Spieler persönlich und tief.
 
 SPIELERPROFIL:
 - Name: ${profile.name || 'Spieler'}
 - Spieljahre: ${profile.years || 'unbekannt'}
-- Spielstil: ${profile.style || 'Störspieler'}
-- Material: ${(profile.material || ['Lange Noppe RH']).join(', ')}
-- TTR: ${profile.ttr || 1520}
-- Stärken: Störspiel, Noppen-Kontrolle, Konstanz
-- Schwächen: VH-Abschluss nach Vorspiel, Routine bei Führung, Nervenstärke
-- Ziel: ${profile.goal || 'Führungen ausbauen'}
+- Spielstil: ${profile.style || 'unbekannt'}
+- Material: ${material}
+- TTR: ${profile.ttr || 'unbekannt'}
+- Stärken: ${strengths}
+- Schwächen: ${weaknesses}
+- Ziel: ${profile.goal || 'unbekannt'}
+${getSessionContext()}
 
-DEINE ROLLE:
-- Du kennst diesen Spieler und sein Profil in- und auswendig
-- Du sprichst ihn direkt mit seinem Namen an (gelegentlich, nicht bei jeder Nachricht)
-- Du gibst konkrete, sportpsychologisch fundierte Ratschläge
-- Du beziehst dich auf sein spezifisches Material (lange Noppe, Störspiel) wenn relevant
-- Du bist direkt, klar, empathisch – kein Blabla
-- Antworte auf Deutsch, kurz und präzise (max 4-5 Sätze pro Antwort)
-- Nutze gelegentlich **fettgedruckte** Schlüsselwörter für Betonung
-- Gib am Ende einer Antwort manchmal eine konkrete kleine Übung oder Technik mit
-- Du erinnerst dich an alles was im Gespräch gesagt wurde`;
+DEINE PERSÖNLICHKEIT & REGELN:
+- Du bist wie ein guter Kumpel der auch Profi-Coach ist – direkt, ehrlich, empathisch
+- Du erinnerst dich an ALLES aus vergangenen Sessions und beziehst dich aktiv darauf
+- Wenn es frühere Sessions gibt: frag konkret nach wie es seitdem lief
+- Du erkennst Muster über mehrere Sessions hinweg und benennst sie klar
+- Sprich ${profile.name || 'den Spieler'} gelegentlich direkt mit Namen an
+- Max 4-5 Sätze pro Antwort – kein Blabla
+- Nutze **fett** für Schlüsselbegriffe
+- Gib manchmal eine konkrete Mini-Übung mit
+- Antworte immer auf Deutsch`;
 }
 
-function initChat() {
-  checkApiKey();
+async function initChat() {
+  await checkApiKey();
+  currentSessionId = Date.now();
+  chatHistory = [];
   const name = profile.name || 'Spieler';
-  const style = profile.style ? ` Du spielst als ${profile.style}` : '';
-  const goal = profile.goal ? ` Dein Ziel: ${profile.goal}.` : '';
-  const welcomeText = `Hey ${name} – schön, dass du da bist.${style}.${goal}
+  let welcomeText;
 
-Woran wollen wir heute arbeiten?`;
+  if (sessionMemory.length === 0) {
+    // First ever session
+    welcomeText = `Hey ${name} – schön dass du da bist. Ich bin dein persönlicher Mentalcoach.\n\nIch kenne dein Profil – jetzt will ich dich wirklich kennenlernen. Was beschäftigt dich gerade am meisten in deinem Spiel?`;
+  } else {
+    // Returning player – reference last session
+    const last = sessionMemory[0];
+    const daysSince = Math.floor((Date.now() - new Date(last.dateRaw)) / 86400000);
+    const timeStr = daysSince === 0 ? 'heute früh' : daysSince === 1 ? 'gestern' : `vor ${daysSince} Tagen`;
+    const lastTopic = last.topics[0] ? `"${last.topics[0].slice(0, 60)}"` : 'unserem letzten Gespräch';
+    welcomeText = `Hey ${name} – willkommen zurück.\n\n${timeStr} haben wir über ${lastTopic} gesprochen. Wie lief es seitdem? Hat sich etwas verändert?`;
+  }
   appendMentorBubble(welcomeText);
 }
 
@@ -1026,7 +1171,8 @@ function sendQuick(text) {
 }
 
 async function doSend(text) {
-  if (!apiKey) checkApiKey();
+  if (!apiKey) await checkApiKey();
+  checkForMilestone(text);
   appendUserBubble(text);
   chatHistory.push({ role: 'user', content: text });
 
@@ -1045,15 +1191,30 @@ async function doSend(text) {
         messages: chatHistory
       })
     });
+    if (response.status === 401 || response.status === 403) {
+      apiKey = '';
+      localStorage.removeItem('ft_api_key');
+      throw new Error('auth');
+    }
     const data = await response.json();
     const reply = data.content?.[0]?.text || 'Entschuldigung, ich konnte keine Antwort generieren.';
     
     document.getElementById('typing-indicator')?.remove();
     appendMentorBubble(reply);
     chatHistory.push({ role: 'assistant', content: reply });
+    saveSession();
   } catch(e) {
     document.getElementById('typing-indicator')?.remove();
-    appendMentorBubble('Verbindungsfehler – bitte versuche es nochmal.');
+    if (!apiKey || e.message?.includes('401') || e.message?.includes('auth')) {
+      apiKey = '';
+      localStorage.removeItem('ft_api_key');
+      document.getElementById('typing-indicator')?.remove();
+      await checkApiKey();
+      if (apiKey) doSend(text);
+      return;
+    } else {
+      appendMentorBubble('Verbindungsfehler – bitte versuche es nochmal.');
+    }
   }
 }
 
