@@ -528,24 +528,12 @@
       </div>
     </div>
 
-    <div class="section-label">Wie geht's dir gerade?</div>
+    <div class="section-label">Wie war dein letztes Spiel?</div>
     <div class="mood-row">
-      <div class="mood-chip" onclick="selectMood(this)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        Fokussiert
-      </div>
-      <div class="mood-chip" onclick="selectMood(this)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        Unter Druck
-      </div>
-      <div class="mood-chip" onclick="selectMood(this)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        Müde
-      </div>
-      <div class="mood-chip" onclick="selectMood(this)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        Nervös
-      </div>
+      <div class="mood-chip" onclick="selectMood(this,'won')">🏆 Gewonnen</div>
+      <div class="mood-chip" onclick="selectMood(this,'lost')">😤 Verloren</div>
+      <div class="mood-chip" onclick="selectMood(this,'mixed')">🎯 Durchwachsen</div>
+      <div class="mood-chip" onclick="selectMood(this,'noplay')">⏸ Kein Spiel</div>
     </div>
 
     <div class="section-label">Was möchtest du tun?</div>
