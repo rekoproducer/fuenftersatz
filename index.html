@@ -993,6 +993,29 @@ function selectMood(el, result) {
     profile.lastResult = result;
     profile.lastResultLabel = el.textContent.trim();
     localStorage.setItem('ft_profile', JSON.stringify(profile));
+
+    // Navigate to mentor and trigger result-based opener
+    setTimeout(() => {
+      goTo('screen-mentor');
+      const feed = document.getElementById('chat-messages');
+      // Reset chat for fresh session with context
+      if (feed) {
+        feed.innerHTML = '';
+        chatHistory = [];
+        currentSessionId = Date.now();
+      }
+      const openers = {
+        won:    () => `Hey ${profile.name} – gewonnen heute! 🏆 Wie lief es – war der Abschluss dieses Mal da?`,
+        lost:   () => `${profile.name}, verloren heute. Was ist passiert – wann hat es gekippt?`,
+        mixed:  () => `Durchwachsen also. Was hat funktioniert, was nicht – wo liegt der Unterschied?`,
+        noplay: () => `Kein Spiel heute – trotzdem hier. Was beschäftigt dich gerade mental?`
+      };
+      const opener = openers[result] ? openers[result]() : null;
+      if (opener) {
+        appendMentorBubble(opener);
+        chatHistory.push({ role: 'assistant', content: opener });
+      }
+    }, 300);
   }
 }
 
