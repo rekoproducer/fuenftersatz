@@ -117,6 +117,7 @@
     font-family:'DM Sans',sans-serif; color:#0d0f14; margin-top:auto;
     display:flex; align-items:center; justify-content:center; gap:10px;
   }
+  .sel-btn.sel-active { border-color:var(--accent) !important; color:var(--accent); background:rgba(0,229,160,.08) !important; }
   .next-btn:hover { opacity:.9; transform:translateY(-1px); }
   .next-btn:disabled { opacity:.3; cursor:not-allowed; transform:none; }
 
@@ -909,23 +910,58 @@ function applyProfile() {
 
 // ── PROFILE EDIT ──
 function editProfile() {
-  // Pre-fill onboarding with current values
-  const inp = document.getElementById('input-name');
-  if (inp) inp.value = profile.name || '';
+  document.getElementById('edit-sheet')?.remove();
 
-  // TTR slider
-  const ttr = document.getElementById('ttr-slider');
-  if (ttr) { ttr.value = profile.ttr || 1200; updateTTR(); }
+  const sheet = document.createElement('div');
+  sheet.id = 'edit-sheet';
+  sheet.style.cssText = 'position:fixed;inset:0;background:rgba(13,15,20,.97);z-index:9999;display:flex;flex-direction:column;padding:32px 24px;overflow-y:auto;';
+  sheet.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:4px;letter-spacing:1px;">PROFIL BEARBEITEN</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Nur was sich geändert hat anpassen.</div>
 
-  // Style buttons
-  document.querySelectorAll('#step-1 .option-btn').forEach(btn => {
-    btn.classList.toggle('selected', btn.dataset.val === profile.style);
+    <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">TTR-WERT</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+      <input id="edit-ttr-slider" type="range" min="500" max="2800" step="10" value="${profile.ttr || 1200}"
+        oninput="document.getElementById('edit-ttr-val').textContent=this.value"
+        style="flex:1;accent-color:var(--accent);">
+      <div id="edit-ttr-val" style="font-size:22px;font-weight:700;color:var(--accent);min-width:50px;">${profile.ttr || 1200}</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:24px;" id="edit-ttr-label">Bezirksliga · Solider Vereinsspieler</div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">SPIELSTIL</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;">
+    </div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">ZIEL</div>
+    <input id="edit-goal" type="text" value="${profile.goal || ''}" placeholder="z.B. Ruhiger unter Druck bleiben"
+      style="width:100%;background:#1a1d26;border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;font-size:14px;color:#fff;outline:none;margin-bottom:28px;box-sizing:border-box;font-family:'DM Sans',sans-serif;">
+
+    <button onclick="saveEditProfile()" style="background:var(--accent);border:none;border-radius:14px;padding:18px;font-size:16px;font-weight:600;color:#0d0f14;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:12px;">Speichern</button>
+    <button onclick="document.getElementById('edit-sheet').remove()" style="background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;font-size:14px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;">Abbrechen</button>
+  `;
+  document.body.appendChild(sheet);
+  // Populate style buttons
+  const styles = ['Offensiv','Defensiv','Allround','Störspieler'];
+  const grid = document.getElementById('edit-style-grid');
+  styles.forEach(s => {
+    const btn = document.createElement('div');
+    btn.className = 'sel-btn' + (profile.style === s ? ' sel-active' : '');
+    btn.textContent = s;
+    btn.style.cssText = 'background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:14px;transition:.2s;';
+    btn.onclick = () => { grid.querySelectorAll('.sel-btn').forEach(b => b.classList.remove('sel-active')); btn.classList.add('sel-active'); };
+    if (profile.style === s) btn.style.borderColor = 'var(--accent)';
+    grid.appendChild(btn);
   });
+}
 
-  // Show onboarding, hide nav
-  document.getElementById('bottom-nav').style.display = 'none';
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-onboarding').classList.add('active');
+function saveEditProfile() {
+  profile.ttr = parseInt(document.getElementById('edit-ttr-slider').value);
+  const selBtn = document.querySelector('#edit-sheet .sel-active');
+  if (selBtn) profile.style = selBtn.textContent.trim();
+  profile.goal = document.getElementById('edit-goal').value.trim();
+  localStorage.setItem('ft_profile', JSON.stringify(profile));
+  applyProfile();
+  document.getElementById('edit-sheet').remove();
 }
 
 // ── NAVIGATION ──
@@ -948,7 +984,8 @@ function goTo(id) {
   if(id === 'screen-analyse') setTimeout(animateBars, 250);
   if(id === 'screen-mentor') {
     const msgs = document.getElementById('chat-messages');
-    if(msgs && msgs.children.length === 0) initChat();
+    if(msgs && msgs.children.length === 0 && !window._skipInitChat) initChat();
+    window._skipInitChat = false;
   }
   if(id === 'screen-home') renderHomeMemory();
 }
@@ -996,6 +1033,7 @@ function selectMood(el, result) {
 
     // Navigate to mentor and trigger result-based opener
     setTimeout(() => {
+      window._skipInitChat = true;
       goTo('screen-mentor');
       const feed = document.getElementById('chat-messages');
       // Reset chat for fresh session with context
