@@ -522,7 +522,10 @@
         <div class="profile-pill-name" id="pill-name">Spielerprofil</div>
         <div class="profile-pill-tags" id="pill-tags">Störspieler · Lange Noppe</div>
       </div>
-      <div class="profile-pill-ttr" id="pill-ttr">1200</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="profile-pill-ttr" id="pill-ttr">1200</div>
+        <div onclick="editProfile()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.3px;">✏️ Bearbeiten</div>
+      </div>
     </div>
 
     <div class="section-label">Wie geht's dir gerade?</div>
@@ -916,6 +919,27 @@ function applyProfile() {
   document.getElementById('pill-ttr').textContent = profile.ttr;
 }
 
+// ── PROFILE EDIT ──
+function editProfile() {
+  // Pre-fill onboarding with current values
+  const inp = document.getElementById('input-name');
+  if (inp) inp.value = profile.name || '';
+
+  // TTR slider
+  const ttr = document.getElementById('ttr-slider');
+  if (ttr) { ttr.value = profile.ttr || 1200; updateTTR(); }
+
+  // Style buttons
+  document.querySelectorAll('#step-1 .option-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.val === profile.style);
+  });
+
+  // Show onboarding, hide nav
+  document.getElementById('bottom-nav').style.display = 'none';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-onboarding').classList.add('active');
+}
+
 // ── NAVIGATION ──
 const navMap = {'screen-home':'nav-home','screen-mentor':'nav-mentor','screen-sound':'nav-sound','screen-analyse':'nav-analyse'};
 
@@ -974,9 +998,14 @@ function animateBars() {
   document.querySelectorAll('.bar-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
 }
 
-function selectMood(el) {
+function selectMood(el, result) {
   document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+  if (result) {
+    profile.lastResult = result;
+    profile.lastResultLabel = el.textContent.trim();
+    localStorage.setItem('ft_profile', JSON.stringify(profile));
+  }
 }
 
 // ── REAL AI MENTOR ──
@@ -1100,6 +1129,7 @@ SPIELERPROFIL:
 - Stärken: ${strengths}
 - Schwächen: ${weaknesses}
 - Ziel: ${profile.goal || 'unbekannt'}
+- Letztes Spielergebnis: ${profile.lastResultLabel || 'nicht angegeben'}
 ${getSessionContext()}
 
 DEINE PERSÖNLICHKEIT & REGELN:
