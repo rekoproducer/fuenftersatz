@@ -669,9 +669,13 @@
       <div class="logo" style="font-size:18px">fünftersatz</div>
       <div style="width:70px"></div>
     </div>
-    <div class="hero" style="padding-bottom:20px">
+    <div class="hero" style="padding-bottom:16px">
       <div class="hero-eyebrow">Binaural Beats</div>
-      <div class="hero-title" style="font-size:44px">FREQUENZEN<br>FÜR <span style="color:var(--accent3)">DEINEN FLOW</span></div>
+      <div class="hero-title" style="font-size:40px">FREQUENZEN<br>FÜR <span style="color:var(--accent3)">DEINEN FLOW</span></div>
+    </div>
+    <div style="margin:0 20px 20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:16px 18px;">
+      <div style="font-size:13px;font-weight:600;color:var(--accent3);letter-spacing:.5px;margin-bottom:8px;">WAS SIND BINAURAL BEATS?</div>
+      <div style="font-size:13px;color:#bbc;line-height:1.7;">Dein Gehirn hört in jedem Ohr eine leicht andere Frequenz – und synchronisiert sich automatisch auf den Unterschied. Das Ergebnis: du steuerst gezielt deinen mentalen Zustand. Kein Hokuspokus – in der Sportwissenschaft gut dokumentiert.</div>
     </div>
     <div class="player-card">
       <div class="wave-viz">
@@ -693,25 +697,42 @@
       </div>
     </div>
     <div class="section-label">Frequenz wählen</div>
+    <div style="margin:0 20px 8px;font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--muted);">FREQUENZ WÄHLEN</div>
     <div class="beat-list">
-      <div class="beat-item active" onclick="selectBeat(this,'Focus Alpha · 10 Hz','Ruhige Konzentration · Vor dem Match')">
+      <div class="beat-item active" onclick="selectBeat(this,'Focus Alpha · 10 Hz','Alpha-Wellen · Ruhige Konzentration')">
         <div class="beat-dot" style="background:#7b6cff"></div>
-        <div><div class="beat-name">Focus Alpha</div><div class="beat-desc">Ruhige Konzentration · Vor dem Match</div></div>
+        <div style="flex:1">
+          <div class="beat-name">Focus Alpha</div>
+          <div class="beat-desc">Ruhige Wachheit ohne Anspannung</div>
+          <div style="font-size:11px;color:var(--accent3);margin-top:3px;">⏱ 10–30 Min vor dem Match oder Training</div>
+        </div>
         <div class="beat-hz" style="color:#7b6cff">10 Hz</div>
       </div>
       <div class="beat-item" onclick="selectBeat(this,'Deep Flow · 6 Hz','Theta-Wellen · Visualisierung & Intuition')">
         <div class="beat-dot" style="background:var(--accent)"></div>
-        <div><div class="beat-name">Deep Flow</div><div class="beat-desc">Visualisierung & Intuition</div></div>
+        <div style="flex:1">
+          <div class="beat-name">Deep Flow</div>
+          <div class="beat-desc">Tief entspannt, Bilder kommen von selbst</div>
+          <div style="font-size:11px;color:var(--accent3);margin-top:3px;">🎯 Zum Visualisieren von Spielsituationen</div>
+        </div>
         <div class="beat-hz" style="color:var(--accent)">6 Hz</div>
       </div>
       <div class="beat-item" onclick="selectBeat(this,'Power Up · 20 Hz','Beta-Aktivierung · Energie & Reaktion')">
         <div class="beat-dot" style="background:var(--accent2)"></div>
-        <div><div class="beat-name">Power Up</div><div class="beat-desc">Energie & Reaktionsschnelle</div></div>
+        <div style="flex:1">
+          <div class="beat-name">Power Up</div>
+          <div class="beat-desc">Aktivierung, Fokus, Reaktionsschnelligkeit</div>
+          <div style="font-size:11px;color:var(--accent3);margin-top:3px;">⚡ Kurz vorm Aufwärmen wenn du Energie brauchst</div>
+        </div>
         <div class="beat-hz" style="color:var(--accent2)">20 Hz</div>
       </div>
       <div class="beat-item" onclick="selectBeat(this,'Reset · 4 Hz','Delta-Entspannung · Nach dem Match')">
         <div class="beat-dot" style="background:#f5a623"></div>
-        <div><div class="beat-name">Reset</div><div class="beat-desc">Entspannung · Nach dem Match</div></div>
+        <div style="flex:1">
+          <div class="beat-name">Reset</div>
+          <div class="beat-desc">Loslassen, Nervensystem beruhigen</div>
+          <div style="font-size:11px;color:var(--accent3);margin-top:3px;">🌙 Nach dem Match oder abends zum Runterkommen</div>
+        </div>
         <div class="beat-hz" style="color:#f5a623">4 Hz</div>
       </div>
     </div>
@@ -879,15 +900,20 @@ function finishOnboarding() {
   const nameVal = document.getElementById('input-name').value.trim() || 'Spieler';
   profile.name = nameVal;
 
-  // Update home screen with profile data
+  // Save profile to localStorage
+  localStorage.setItem('ft_profile', JSON.stringify(profile));
+
+  applyProfile();
+  document.getElementById('bottom-nav').style.display = 'flex';
+  goTo('screen-home');
+}
+
+function applyProfile() {
+  const nameVal = profile.name || 'Spieler';
   document.getElementById('home-greeting').textContent = 'Willkommen, ' + nameVal;
   document.getElementById('pill-avatar').textContent = nameVal.charAt(0).toUpperCase();
   document.getElementById('pill-name').textContent = nameVal;
   document.getElementById('pill-ttr').textContent = profile.ttr;
-
-  document.getElementById('bottom-nav').style.display = 'flex';
-  initChat();
-  goTo('screen-home');
 }
 
 // ── NAVIGATION ──
@@ -1293,6 +1319,22 @@ function toggleRec() {
     document.getElementById('affText').textContent = '"DEINE AUFNAHME GESPEICHERT ✓"';
   }
 }
+
+// ── STARTUP: skip onboarding if profile already saved ──
+(function() {
+  const saved = localStorage.getItem('ft_profile');
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      Object.assign(profile, p);
+      applyProfile();
+      document.getElementById('bottom-nav').style.display = 'flex';
+      goTo('screen-home');
+    } catch(e) {
+      localStorage.removeItem('ft_profile');
+    }
+  }
+})();
 </script>
 </body>
 </html>
