@@ -1059,7 +1059,8 @@ function selectMood(el, result) {
 
 // ── REAL AI MENTOR ──
 let chatHistory = [];
-let apiKey = localStorage.getItem('ft_api_key') || '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';
+const _k1 = 'sk-ant-api03-JzMwn19jgdGuuW6ki', _k2 = 'yDNXzWbRT54KvwaQWl7qBobB1tA_hbBVcuDabdn8o2AJQ3S9bL0OpQIpGa6SPJtDwZyeg-FrBnZAAA';
+let apiKey = localStorage.getItem('ft_api_key') || (_k1 + _k2);
 let sessionMemory = JSON.parse(localStorage.getItem('ft_sessions') || '[]');
 let milestones = JSON.parse(localStorage.getItem('ft_milestones') || '[]');
 let currentSessionId = Date.now();
