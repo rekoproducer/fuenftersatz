@@ -1148,17 +1148,18 @@ function createHalftoneBall(canvasId, size, autoHide) {
 })();
 
 // Home ball – init when navigating to home
-// Hook into renderHomeMemory to init home ball
-const _origRenderHome = renderHomeMemory;
-function renderHomeMemory() {
-  _origRenderHome();
-  setTimeout(() => {
-    const c = document.getElementById('home-canvas');
-    if (c && c.width === 0) {
-      const size = Math.min(window.innerWidth * 0.85, 260);
-      createHalftoneBall('home-canvas', size, false);
-    }
-  }, 50);
+// Init home ball when canvas first becomes visible
+let _homeBallStarted = false;
+document.addEventListener('visibilitychange', tryInitHomeBall);
+document.addEventListener('click', tryInitHomeBall);
+function tryInitHomeBall() {
+  if (_homeBallStarted) return;
+  const c = document.getElementById('home-canvas');
+  if (c && c.offsetParent !== null) {
+    _homeBallStarted = true;
+    const size = Math.min(window.innerWidth * 0.85, 260);
+    createHalftoneBall('home-canvas', size, false);
+  }
 }
 
 // ── STARTUP ──
