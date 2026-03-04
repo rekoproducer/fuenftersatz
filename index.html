@@ -311,6 +311,13 @@
 <div class="shell">
 
   <!-- ════ ONBOARDING ════ -->
+  
+  <!-- SPLASH SCREEN -->
+  <div id="screen-splash" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#090909;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;">
+    <canvas id="splash-canvas"></canvas>
+    <div style="margin-top:24px;font-family:'Syne',sans-serif;font-size:clamp(26px,7vw,48px);font-weight:800;color:#3dffc0;letter-spacing:0.06em;text-shadow:0 0 40px rgba(61,255,192,0.4),0 0 80px rgba(61,255,192,0.15);">fünftersatz</div>
+  </div>
+
   <div class="screen active" id="screen-onboarding">
     <div class="topbar">
       <div class="logo">fünftersatz</div>
@@ -457,10 +464,15 @@
         7 Tage
       </div>
     </div>
-    <div class="hero">
-      <div class="hero-eyebrow" id="home-greeting">Guten Abend</div>
-      <div class="hero-title">MENTAL<br><span class="hl">STÄRKER</span><br>SPIELEN</div>
-      <div class="hero-sub">Dein persönlicher KI-Mentor für den Kopf im Tischtennis.</div>
+    <div class="hero" style="position:relative;display:flex;flex-direction:column;align-items:center;padding:0;margin-bottom:8px;">
+      <div style="position:relative;width:100%;display:flex;align-items:center;justify-content:center;">
+        <canvas id="home-canvas" style="display:block;max-width:260px;max-height:260px;"></canvas>
+        <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;">
+          <div class="hero-eyebrow" id="home-greeting" style="margin-bottom:4px;">Guten Abend</div>
+          <div class="hero-title" style="font-size:clamp(22px,6vw,36px);line-height:1.1;">MENTAL<br><span class="hl">STÄRKER</span><br>SPIELEN</div>
+        </div>
+      </div>
+      <div class="hero-sub" style="margin-top:8px;">Dein persönlicher KI-Mentor für den Kopf im Tischtennis.</div>
     </div>
     <div class="profile-pill" id="profile-pill">
       <div class="profile-pill-avatar" id="pill-avatar">?</div>
@@ -1053,6 +1065,99 @@ let affIdx = 0;
 function nextAff() { affIdx = (affIdx+1) % affs.length; const el = document.getElementById('affText'); el.style.opacity='0'; setTimeout(()=>{el.textContent=affs[affIdx];el.style.opacity='1';},250); }
 let rec = false;
 function toggleRec() { rec = !rec; const btn = document.getElementById('recBtn'); if(rec) { btn.innerHTML = btn.innerHTML.replace('Eigenen Satz einsprechen','Aufnahme stoppen'); btn.classList.add('recording'); document.getElementById('affText').textContent = 'Sprich deinen Satz...'; } else { btn.innerHTML = btn.innerHTML.replace('Aufnahme stoppen','Eigenen Satz einsprechen'); btn.classList.remove('recording'); document.getElementById('affText').textContent = '"DEINE AUFNAHME GESPEICHERT ✓"'; } }
+
+
+// ── HALFTONE BALL ──
+function createHalftoneBall(canvasId, size, autoHide) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const cx = size / 2, cy = size / 2, R = size * 0.42;
+
+  function getColor(brightness, alpha) {
+    const r = Math.round(10 + brightness * 51);
+    const g = Math.round(80 + brightness * 175);
+    const b = Math.round(80 + brightness * 112);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  const dots = [];
+  const rows = 26;
+  for (let i = 0; i <= rows; i++) {
+    const phi = (Math.PI * i) / rows;
+    const y3d = Math.cos(phi);
+    const ringRadius = Math.sin(phi);
+    const numDots = Math.max(1, Math.round(rows * ringRadius * 1.1));
+    for (let j = 0; j < numDots; j++) {
+      const theta = (2 * Math.PI * j) / numDots;
+      const x3d = Math.cos(theta) * ringRadius;
+      const z3d = Math.sin(theta) * ringRadius;
+      const baseDotR = (size * 0.003) + ringRadius * (size * 0.025);
+      dots.push({ x3d, y3d, z3d, baseDotR, phi });
+    }
+  }
+
+  function project(x3d, y3d, z3d, rotY) {
+    const x2 = x3d * Math.cos(rotY) - z3d * Math.sin(rotY);
+    const z2 = x3d * Math.sin(rotY) + z3d * Math.cos(rotY);
+    const tiltX = 0.3;
+    const y2 = y3d * Math.cos(tiltX) - z2 * Math.sin(tiltX);
+    const z3 = y3d * Math.sin(tiltX) + z2 * Math.cos(tiltX);
+    return { screenX: cx + x2 * R, screenY: cy + y2 * R, z: z3 };
+  }
+
+  let t = 0;
+  let animId;
+  function draw() {
+    ctx.clearRect(0, 0, size, size);
+    const rotY = t * 0.008;
+    const projected = dots.map(d => ({ ...d, ...project(d.x3d, d.y3d, d.z3d, rotY) }));
+    projected.sort((a, b) => a.z - b.z);
+    for (const d of projected) {
+      const depthNorm = (d.z + 1) / 2;
+      if (depthNorm < 0.05) continue;
+      const sizeScale = 0.3 + depthNorm * 0.7;
+      const pulse = 1 + 0.04 * Math.sin(t * 0.03 + d.phi * 3);
+      const lightDot = Math.max(0, -d.x3d * 0.5 + d.y3d * 0.3 + d.z * 0.8);
+      const brightness = Math.min(1, 0.3 + depthNorm * 0.5 + lightDot * 0.4);
+      const alpha = Math.min(1, 0.15 + depthNorm * 0.85);
+      ctx.beginPath();
+      ctx.arc(d.screenX, d.screenY, d.baseDotR * sizeScale * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = getColor(brightness, alpha);
+      ctx.fill();
+    }
+    t++;
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+  return () => cancelAnimationFrame(animId);
+}
+
+// Splash screen
+(function() {
+  const splash = document.getElementById('screen-splash');
+  if (!splash) return;
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.55;
+  createHalftoneBall('splash-canvas', size, false);
+  setTimeout(() => {
+    splash.style.opacity = '0';
+    setTimeout(() => { splash.style.display = 'none'; }, 650);
+  }, 2200);
+})();
+
+// Home ball – init when navigating to home
+const _origGoTo = goTo;
+function goTo(id) {
+  _origGoTo(id);
+  if (id === 'screen-home') {
+    setTimeout(() => {
+      const size = Math.min(window.innerWidth * 0.85, 260);
+      createHalftoneBall('home-canvas', size, false);
+    }, 50);
+  }
+}
 
 // ── STARTUP ──
 (function() {
