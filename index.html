@@ -1148,15 +1148,17 @@ function createHalftoneBall(canvasId, size, autoHide) {
 })();
 
 // Home ball – init when navigating to home
-const _origGoTo = goTo;
-function goTo(id) {
-  _origGoTo(id);
-  if (id === 'screen-home') {
-    setTimeout(() => {
+// Hook into renderHomeMemory to init home ball
+const _origRenderHome = renderHomeMemory;
+function renderHomeMemory() {
+  _origRenderHome();
+  setTimeout(() => {
+    const c = document.getElementById('home-canvas');
+    if (c && c.width === 0) {
       const size = Math.min(window.innerWidth * 0.85, 260);
       createHalftoneBall('home-canvas', size, false);
-    }, 50);
-  }
+    }
+  }, 50);
 }
 
 // ── STARTUP ──
