@@ -542,14 +542,14 @@
       <div style="width:70px"></div>
     </div>
     <div id="chat-messages" style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px;"></div>
-    <div id="quick-replies" style="padding:0 24px 14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+    <div style="padding:12px 20px 32px;background:var(--bg);display:flex;gap:12px;align-items:flex-end;flex-shrink:0;">
+      <textarea id="chat-input" placeholder="Schreib deinem Mentor..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)" style="flex:1;background:var(--card);border:2px solid var(--border);border-radius:16px;padding:14px 18px;font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;resize:none;line-height:1.5;transition:.2s;max-height:120px;"></textarea>
+      <button onclick="sendMessage()" id="send-btn" style="width:50px;height:50px;border-radius:50%;background:var(--accent3);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;box-shadow:0 0 20px rgba(123,108,255,.3);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    </div>
+    <div id="quick-replies" style="border-top:1px solid var(--border);padding:0 24px 14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
       <button class="reply-btn" onclick="sendQuick('Der VH-Abschluss lässt mich nicht los')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> VH-Abschluss fehlt mir noch</button>
       <button class="reply-btn" onclick="sendQuick('Ich verliere immer wenn ich im letzten Satz führe')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Bei Führung werde ich hektisch</button>
       <button class="reply-btn" onclick="sendQuick('Gegner durchschauen mein Noppenspiel zunehmend')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Gegner lesen mein Noppenspiel</button>
-    </div>
-    <div style="padding:12px 20px 32px;border-top:1px solid var(--border);background:var(--bg);display:flex;gap:12px;align-items:flex-end;flex-shrink:0;">
-      <textarea id="chat-input" placeholder="Schreib deinem Mentor..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)" style="flex:1;background:var(--card);border:2px solid var(--border);border-radius:16px;padding:14px 18px;font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;resize:none;line-height:1.5;transition:.2s;max-height:120px;"></textarea>
-      <button onclick="sendMessage()" id="send-btn" style="width:50px;height:50px;border-radius:50%;background:var(--accent3);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;box-shadow:0 0 20px rgba(123,108,255,.3);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
     </div>
   </div>
 
